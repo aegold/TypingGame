@@ -5,15 +5,9 @@ const Lesson = require("../models/lesson");
 // Lấy tất cả bài học
 router.get("/", async (req, res) => {
   try {
-    console.log("📚 GET /api/lessons - Fetching all lessons...");
     const lessons = await Lesson.find();
-    console.log("📚 Found lessons count:", lessons.length);
-    if (lessons.length > 0) {
-      console.log("📚 Sample lesson:", JSON.stringify(lessons[0], null, 2));
-    }
     res.json(lessons);
   } catch (err) {
-    console.error("❌ Error fetching lessons:", err);
     res.status(500).json({ message: err.message });
   }
 });

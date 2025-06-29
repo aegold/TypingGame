@@ -18,7 +18,7 @@ function GamePage() {
     const fetchLesson = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/lessons/${id}`);
+        const response = await axios.get(`/api/lessons/${id}`);
         setLesson(response.data);
         setError(null);
       } catch (err) {

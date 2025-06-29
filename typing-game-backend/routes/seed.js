@@ -85,17 +85,17 @@ const sampleLessons = [
 router.post("/lessons", async (req, res) => {
   try {
     console.log("🌱 Starting lessons seed...");
-    
+
     // Check if already seeded
     const existingCount = await Lesson.countDocuments();
     console.log(`📊 Found ${existingCount} existing lessons`);
-    
+
     if (existingCount > 0) {
       return res.json({
         success: true,
         message: `Database already has ${existingCount} lessons. No seeding needed.`,
         lessons_count: existingCount,
-        action: "skipped"
+        action: "skipped",
       });
     }
 
@@ -103,21 +103,20 @@ router.post("/lessons", async (req, res) => {
     console.log("📚 Inserting sample lessons...");
     const result = await Lesson.insertMany(sampleLessons);
     console.log(`✅ Successfully seeded ${result.length} lessons`);
-    
+
     res.json({
       success: true,
       message: "Lessons seeded successfully!",
       lessons_count: result.length,
       action: "seeded",
-      lessons: result.map(l => ({ id: l._id, title: l.title }))
+      lessons: result.map((l) => ({ id: l._id, title: l.title })),
     });
-    
   } catch (err) {
     console.error("❌ Seed error:", err);
     res.status(500).json({
       success: false,
       error: "Failed to seed lessons",
-      details: err.message
+      details: err.message,
     });
   }
 });
@@ -128,20 +127,19 @@ router.delete("/lessons", async (req, res) => {
     console.log("🗑️ Clearing all lessons...");
     const result = await Lesson.deleteMany({});
     console.log(`🗑️ Deleted ${result.deletedCount} lessons`);
-    
+
     res.json({
       success: true,
       message: `Deleted ${result.deletedCount} lessons`,
       deleted_count: result.deletedCount,
-      action: "cleared"
+      action: "cleared",
     });
-    
   } catch (err) {
     console.error("❌ Clear error:", err);
     res.status(500).json({
       success: false,
       error: "Failed to clear lessons",
-      details: err.message
+      details: err.message,
     });
   }
 });
@@ -151,24 +149,25 @@ router.get("/status", async (req, res) => {
   try {
     const lessonCount = await Lesson.countDocuments();
     const sampleLesson = lessonCount > 0 ? await Lesson.findOne() : null;
-    
+
     res.json({
       success: true,
       database_status: "connected",
       lessons_count: lessonCount,
       needs_seeding: lessonCount === 0,
-      sample_lesson: sampleLesson ? {
-        id: sampleLesson._id,
-        title: sampleLesson.title,
-        gameType: sampleLesson.gameType
-      } : null
+      sample_lesson: sampleLesson
+        ? {
+            id: sampleLesson._id,
+            title: sampleLesson.title,
+            gameType: sampleLesson.gameType,
+          }
+        : null,
     });
-    
   } catch (err) {
     res.status(500).json({
       success: false,
       error: "Failed to check status",
-      details: err.message
+      details: err.message,
     });
   }
 });
