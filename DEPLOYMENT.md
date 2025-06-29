@@ -9,28 +9,37 @@ Repository: `https://github.com/aegold/TypingGame`
 ### ⚡ Quick Steps:
 
 1. **Render (Backend):**
+
    - Repository: `aegold/TypingGame`
    - Root Directory: `typing-game-backend`
    - Build: `npm install`
    - Start: `npm start`
 
 2. **Vercel (Frontend):**
-   - Repository: `aegold/TypingGame` 
-   - Root Directory: `typing-game`
+
+   - Repository: `aegold/TypingGame`
+   - **Root Directory: `typing-game`** ← **CRITICAL!**
    - Framework: Create React App
 
-3. **Environment Variables:**
+3. **Environment Variables (QUAN TRỌNG):**
+
+   **Backend (Render) - Add vào Environment tab:**
+
    ```bash
-   # Render (Backend)
-   MONGODB_URI=mongodb+srv://aegold:bishe123@cluster0.y3dcdi3.mongodb.net/typing-game?retryWrites=true&w=majority
-   JWT_SECRET=your-super-secret-jwt-key-min-32-characters-here
+   MONGODB_URI=mongodb+srv://aegold:bishe123@cluster0.y3dcdi3.mongodb.net/typing-game?retryWrites=true&w=majority&appName=Cluster0
+   JWT_SECRET=typing-game-super-secret-jwt-key-2024-production-render-deployment
    FRONTEND_URL=https://your-frontend.vercel.app
    NODE_ENV=production
    PORT=10000
+   ```
 
-   # Vercel (Frontend)
+   **Frontend (Vercel) - Add vào Environment Variables:**
+
+   ```bash
    REACT_APP_API_URL=https://your-backend.onrender.com/api
    ```
+
+   ⚠️ **Lưu ý:** MONGODB_URI phải có `mongodb+srv://` ở đầu!
 
 🚀 **Script hỗ trợ:** Chạy `./deploy-monorepo.ps1` hoặc `./deploy.sh` để xem hướng dẫn chi tiết.
 
@@ -172,6 +181,7 @@ Repository: `https://github.com/aegold/TypingGame`
 Code đã sẵn sàng deploy, bao gồm cả frontend và backend trong cùng 1 repository.
 
 Cấu trúc repository:
+
 ```
 TypingGame/
 ├── typing-game/          (Frontend - React)
@@ -205,10 +215,28 @@ Trong Render dashboard, vào **Environment** tab và thêm:
 
 ```
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/typing-game?retryWrites=true&w=majority
-JWT_SECRET=your-super-secret-jwt-key-min-32-characters-here
+JWT_SECRET=typing-game-super-secret-jwt-key-2024-production-render-deployment
 FRONTEND_URL=https://your-frontend-app.vercel.app
 NODE_ENV=production
 PORT=10000
+```
+
+**💡 Về JWT_SECRET:**
+
+- **Là gì:** Chuỗi bí mật để ký JWT tokens cho authentication
+- **Tự tạo:** Bạn có thể dùng giá trị trên hoặc tạo random string ít nhất 32 ký tự
+- **Bảo mật:** KHÔNG bao giờ commit vào Git, chỉ lưu trong environment variables
+
+**🎲 Cách tạo JWT_SECRET mới (tùy chọn):**
+
+```bash
+# Cách 1: Sử dụng Node.js
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Cách 2: Sử dụng PowerShell
+[System.Web.Security.Membership]::GeneratePassword(64, 0)
+
+# Cách 3: Online generator (search "JWT secret generator")
 ```
 
 **Ví dụ MONGODB_URI thực tế:**
@@ -251,14 +279,16 @@ Frontend nằm trong thư mục `typing-game/` của repository.
 2. **Click "New Project"**
 3. **Import repository:**
    - Chọn repository `aegold/TypingGame`
-   - **Root Directory:** `typing-game` ← **QUAN TRỌNG**
+   - **⚠️ QUAN TRỌNG: Root Directory:** `typing-game`
 4. **Cấu hình Project:**
    - **Project Name:** `typing-game-frontend`
    - **Framework Preset:** `Create React App`
-   - **Root Directory:** `typing-game` (confirm lại)
+   - **⚠️ Root Directory:** `typing-game` (PHẢI có!)
+   - **Build Command:** `npm run build` (auto-detect)
+   - **Output Directory:** `build` (auto-detect)
 5. **Click "Deploy"**
 
-⚠️ **Quan trọng:** Phải set **Root Directory** = `typing-game` vì frontend nằm trong subfolder.
+⚠️ **CRITICAL:** Nếu không set **Root Directory** = `typing-game`, build sẽ fail với lỗi "index.html not found"
 
 ### 3.3. Cấu hình Environment Variables
 
@@ -424,131 +454,82 @@ MongoDB connection timeout on cold start
 - ✅ Add health check endpoint `/health`
 - ✅ Consider upgrading to paid plan để tránh cold start
 
----
+### Vercel Build Failed - index.html not found:
 
-## 📱 Custom Domains (Optional)
-
-### Vercel:
-
-1. **Settings** > **Domains**
-2. Add custom domain
-3. Update DNS records
-
-### Render:
-
-1. **Settings** > **Custom Domains**
-2. Add custom domain
-3. Update DNS records
-
----
-
-## 🔄 Continuous Deployment
-
-Cả Vercel và Render đều có tự động deploy khi push code mới lên GitHub:
-
-- **Vercel**: Auto deploy từ main branch
-- **Render**: Auto deploy từ main branch
-
-## 🎯 URLs Mẫu
-
-Sau khi deploy thành công:
-
-- **Frontend**: `https://typing-game-frontend.vercel.app`
-- **Backend**: `https://typing-game-backend.onrender.com`
-- **API**: `https://typing-game-backend.onrender.com/api`
-
----
-
-## 📞 Support
-
-Nếu gặp vấn đề:
-
-1. Check deployment logs
-2. Verify environment variables
-3. Test API endpoints với Postman
-4. Check browser console cho frontend errors
-
----
-
-## ⚙️ Render Configuration Tips:
-
-1. **Build & Start Commands:**
-
-   - Build Command: `npm install` (Render tự động detect)
-   - Start Command: `npm start` hoặc `node index.js`
-
-2. **Health Check:**
-
-   - Render sẽ ping `/` endpoint để check health
-   - Đảm bảo backend trả về status 200 cho GET `/`
-
-3. **Environment Variables Auto-Reload:**
-
-   - Sau khi thêm env variables, service sẽ tự động restart
-   - Không cần redeploy manually
-
-4. **Persistent Files:**
-   - Render không lưu file uploads
-   - Sử dụng external storage (AWS S3, Cloudinary) cho file uploads
-
----
-
-## 🔄 Migration từ Railway sang Render
-
-Nếu bạn đã deploy trên Railway trước đây:
-
-1. **Export Environment Variables từ Railway:**
-
-   - Copy các environment variables từ Railway dashboard
-   - Save vào file tạm để paste vào Render
-
-2. **Tạo new service trên Render:**
-
-   - Làm theo hướng dẫn deploy ở trên
-   - Paste environment variables đã copy
-
-3. **Update Frontend:**
-
-   - Update `REACT_APP_API_URL` trong Vercel environment variables
-   - Change từ `.railway.app` sang `.onrender.com`
-   - Redeploy frontend
-
-4. **Test kết nối:**
-   - Test API endpoints
-   - Verify database connection
-   - Check CORS configuration
-
-⚠️ **Lưu ý:** Railway và Render có thể chạy song song trong quá trình migration.
-
----
-
-## 📁 Cấu trúc Monorepo
-
-Repository `https://github.com/aegold/TypingGame` chứa cả frontend và backend:
-
+**Lỗi:**
 ```
-TypingGame/
-├── typing-game/              # Frontend (React)
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── ...
-├── typing-game-backend/      # Backend (Node.js)
-│   ├── routes/
-│   ├── models/
-│   ├── middleware/
-│   ├── package.json
-│   └── index.js
-├── DEPLOYMENT.md            # Hướng dẫn deploy
-└── README.md
+Could not find a required file.
+  Name: index.html
+  Searched in: /vercel/path0/typing-game/public
+Error: Command "yarn run build" exited with 1
 ```
 
-**Ưu điểm của Monorepo:**
-- ✅ Dễ quản lý code
-- ✅ Shared documentation
-- ✅ Single repository to maintain
-- ✅ Easier version control
+**🔍 Nguyên nhân:**
+- Root Directory không được set đúng trong Vercel
+- Vercel đang tìm file trong thư mục sai
 
-**Khi deploy:**
-- **Render**: Set Root Directory = `typing-game-backend`
-- **Vercel**: Set Root Directory = `typing-game`
+**💡 Cách fix:**
+
+1. **Vào Vercel Dashboard:**
+   - Đăng nhập [vercel.com](https://vercel.com)
+   - Click vào project (typing-game-frontend)
+   - Vào **Settings** > **General**
+
+2. **Cấu hình Root Directory:**
+   - Tìm section **"Root Directory"**
+   - Nhập: `typing-game` ← **QUAN TRỌNG**
+   - Click **"Save"**
+
+3. **Redeploy:**
+   - Vào **Deployments** tab
+   - Click **"Redeploy"** on latest deployment
+   - Hoặc trigger new deployment bằng cách push code
+
+**✅ Alternative - Tạo project mới:**
+Nếu vẫn lỗi, có thể delete project và tạo lại:
+
+1. **Delete current project:**
+   - Settings > General > Delete Project
+
+2. **Import lại với config đúng:**
+   - New Project
+   - Import `aegold/TypingGame`
+   - **Root Directory:** `typing-game` (set ngay từ đầu)
+   - Framework Preset: Create React App
+   - Deploy
+
+**🚨 Verify Steps:**
+- Root Directory = `typing-game`
+- Framework = Create React App  
+- Build Command = `npm run build` (auto-detect)
+- Output Directory = `build` (auto-detect)
+
+---
+
+## 🔐 Environment Variables Explained
+
+### **Backend (Render) Environment Variables:**
+
+| Variable       | Mô tả                                  | Ví dụ                                                                                                |
+| -------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `MONGODB_URI`  | Connection string tới MongoDB Atlas    | `mongodb+srv://aegold:bishe123@cluster0.y3dcdi3.mongodb.net/typing-game?retryWrites=true&w=majority` |
+| `JWT_SECRET`   | Chuỗi bí mật để ký JWT tokens (tự tạo) | `typing-game-super-secret-jwt-key-2024-production-render-deployment`                                 |
+| `FRONTEND_URL` | URL của frontend trên Vercel           | `https://typing-game-frontend.vercel.app`                                                            |
+| `NODE_ENV`     | Môi trường runtime                     | `production`                                                                                         |
+| `PORT`         | Port mà Render yêu cầu                 | `10000`                                                                                              |
+
+### **Frontend (Vercel) Environment Variables:**
+
+| Variable            | Mô tả                           | Ví dụ                                          |
+| ------------------- | ------------------------------- | ---------------------------------------------- |
+| `REACT_APP_API_URL` | URL của backend API trên Render | `https://typing-game-backend.onrender.com/api` |
+
+### **🛡️ Bảo mật Environment Variables:**
+
+- ✅ **KHÔNG** commit file `.env` vào Git
+- ✅ Sử dụng `.env.example` để hướng dẫn
+- ✅ JWT_SECRET phải dài ít nhất 32 ký tự
+- ✅ Mỗi environment (dev/prod) nên có JWT_SECRET khác nhau
+- ✅ MONGODB_URI chứa password - giữ bí mật
+
+### **📝 Cách tạo JWT_SECRET mạnh:**

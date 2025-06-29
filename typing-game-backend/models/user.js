@@ -29,8 +29,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Index cho performance
-userSchema.index({ username: 1 });
+// Index cho performance (unique đã được define trong schema)
 userSchema.index({ "history.date": -1 });
 
 module.exports = mongoose.model("User", userSchema);

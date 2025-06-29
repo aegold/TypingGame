@@ -59,13 +59,39 @@ app.use("/api", userRoutes);
 const lessonRoutes = require("./routes/lesson");
 app.use("/api/lessons", lessonRoutes);
 
+// Debug environment variables
+console.log("🔍 Environment check:");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("PORT:", process.env.PORT);
+console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
+console.log("MONGODB_URI first 20 chars:", process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + "..." : "undefined");
+console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+
+// Validate MONGODB_URI
+if (!process.env.MONGODB_URI) {
+  console.error("❌ MONGODB_URI environment variable is not set!");
+  console.error("🚨 Go to Render Dashboard > Environment and add MONGODB_URI");
+  process.exit(1);
+}
+
+if (
+  !process.env.MONGODB_URI.startsWith("mongodb://") &&
+  !process.env.MONGODB_URI.startsWith("mongodb+srv://")
+) {
+  console.error("❌ Invalid MONGODB_URI format. Must start with 'mongodb://' or 'mongodb+srv://'");
+  console.error("Current value first 50 chars:", process.env.MONGODB_URI.substring(0, 50) + "...");
+  console.error("🚨 Expected format: mongodb+srv://username:password@cluster...");
+  process.exit(1);
+}
+
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log("Connected to MongoDB");
+    console.log("✅ Connected to MongoDB successfully");
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`🚀 Server is running on port ${PORT}`);
     });
   })
   .catch((err) => console.error("MongoDB connection error:", err));
