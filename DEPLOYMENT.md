@@ -18,7 +18,7 @@ Repository: `https://github.com/aegold/TypingGame`
 2. **Vercel (Frontend):**
 
    - Repository: `aegold/TypingGame`
-   - **Root Directory: `typing-game`** ← **CRITICAL!**
+   - Root Directory: `typing-game`
    - Framework: Create React App
 
 3. **Environment Variables (QUAN TRỌNG):**
@@ -28,7 +28,7 @@ Repository: `https://github.com/aegold/TypingGame`
    ```bash
    MONGODB_URI=mongodb+srv://aegold:bishe123@cluster0.y3dcdi3.mongodb.net/typing-game?retryWrites=true&w=majority&appName=Cluster0
    JWT_SECRET=typing-game-super-secret-jwt-key-2024-production-render-deployment
-   FRONTEND_URL=https://your-frontend.vercel.app
+   FRONTEND_URL=https://typing-game-fe.vercel.app
    NODE_ENV=production
    PORT=10000
    ```
@@ -36,10 +36,13 @@ Repository: `https://github.com/aegold/TypingGame`
    **Frontend (Vercel) - Add vào Environment Variables:**
 
    ```bash
-   REACT_APP_API_URL=https://your-backend.onrender.com/api
+   REACT_APP_API_URL=https://typing-game-backend-oegb.onrender.com/api
    ```
 
-   ⚠️ **Lưu ý:** MONGODB_URI phải có `mongodb+srv://` ở đầu!
+   ⚠️ **CRITICAL:** 
+   - `MONGODB_URI` phải có `mongodb+srv://` ở đầu!
+   - `FRONTEND_URL` phải match EXACT domain Vercel!
+   - `REACT_APP_API_URL` phải match EXACT domain Render!
 
 🚀 **Script hỗ trợ:** Chạy `./deploy-monorepo.ps1` hoặc `./deploy.sh` để xem hướng dẫn chi tiết.
 
@@ -279,16 +282,14 @@ Frontend nằm trong thư mục `typing-game/` của repository.
 2. **Click "New Project"**
 3. **Import repository:**
    - Chọn repository `aegold/TypingGame`
-   - **⚠️ QUAN TRỌNG: Root Directory:** `typing-game`
+   - **Root Directory:** `typing-game` ← **QUAN TRỌNG**
 4. **Cấu hình Project:**
    - **Project Name:** `typing-game-frontend`
    - **Framework Preset:** `Create React App`
-   - **⚠️ Root Directory:** `typing-game` (PHẢI có!)
-   - **Build Command:** `npm run build` (auto-detect)
-   - **Output Directory:** `build` (auto-detect)
+   - **Root Directory:** `typing-game` (confirm lại)
 5. **Click "Deploy"**
 
-⚠️ **CRITICAL:** Nếu không set **Root Directory** = `typing-game`, build sẽ fail với lỗi "index.html not found"
+⚠️ **Quan trọng:** Phải set **Root Directory** = `typing-game` vì frontend nằm trong subfolder.
 
 ### 3.3. Cấu hình Environment Variables
 
@@ -306,13 +307,21 @@ Sau khi thêm environment variables, click **"Redeploy"**
 
 ## 🔧 Bước 4: Cấu hình CORS
 
-Cập nhật Render environment variables:
+⚠️ **CRITICAL:** FRONTEND_URL phải match EXACT domain của Vercel
 
-```
-FRONTEND_URL=https://your-frontend-app.vercel.app
-```
+1. **Get exact Vercel domain:**
+   - Vào Vercel Dashboard > Project > Settings > Domains
+   - Copy domain, ví dụ: `https://typing-game-fe.vercel.app`
 
-Vercel sẽ tự generate domain dạng: `https://your-app-name.vercel.app`
+2. **Update FRONTEND_URL trên Render:**
+   ```
+   FRONTEND_URL=https://typing-game-fe.vercel.app
+   ```
+   (Thay thế bằng domain thực tế của bạn)
+
+3. **Save Changes** - Render sẽ auto-restart service
+
+⚠️ **Common mistake:** Domain không khớp sẽ gây CORS policy error
 
 ---
 
@@ -419,6 +428,50 @@ CORS policy error
 - ✅ Check Network tab trong browser DevTools
 - ✅ Verify Render backend đang chạy (check logs)
 
+### ❌ CORS Policy Error - Access-Control-Allow-Origin:
+
+**Error message cụ thể:**
+```
+Access to XMLHttpRequest at 'https://typing-game-backend-oegb.onrender.com/register' 
+from origin 'https://typing-game-fe.vercel.app' has been blocked by CORS policy: 
+Response to preflight request doesn't pass access control check: 
+The 'Access-Control-Allow-Origin' header has a value 'https://typing-game.vercel.app' 
+that is not equal to the supplied origin.
+```
+
+**🔍 Nguyên nhân:**
+- Backend CORS được cấu hình cho domain khác với frontend actual domain
+- `FRONTEND_URL` trên Render không khớp với Vercel deployment URL
+
+**💡 Cách fix ngay:**
+
+1. **Kiểm tra domain Vercel thực tế:**
+   - Vào Vercel Dashboard > Project > Settings > Domains
+   - Copy exact URL: `https://typing-game-fe.vercel.app`
+
+2. **Cập nhật FRONTEND_URL trên Render:**
+   - Vào Render Dashboard > Service > Environment
+   - Edit `FRONTEND_URL` = `https://typing-game-fe.vercel.app`
+   - Click "Save Changes"
+
+3. **Service sẽ auto-restart**, check logs để verify
+
+**✅ Verify fix:**
+- Backend logs không có CORS errors
+- Frontend có thể call API thành công
+- Registration/login hoạt động
+
+**🚨 Alternative domains:**
+Nếu có multiple Vercel domains, có thể set multiple origins trong backend code:
+```javascript
+// Trong index.js backend
+const allowedOrigins = [
+  'https://typing-game-fe.vercel.app',
+  'https://typing-game.vercel.app', 
+  'http://localhost:3000'
+];
+```
+
 ### Render deployment failed:
 
 **Lỗi thường gặp:**
@@ -453,56 +506,6 @@ MongoDB connection timeout on cold start
 - ✅ Set MongoDB connectTimeoutMS = 30000
 - ✅ Add health check endpoint `/health`
 - ✅ Consider upgrading to paid plan để tránh cold start
-
-### Vercel Build Failed - index.html not found:
-
-**Lỗi:**
-```
-Could not find a required file.
-  Name: index.html
-  Searched in: /vercel/path0/typing-game/public
-Error: Command "yarn run build" exited with 1
-```
-
-**🔍 Nguyên nhân:**
-- Root Directory không được set đúng trong Vercel
-- Vercel đang tìm file trong thư mục sai
-
-**💡 Cách fix:**
-
-1. **Vào Vercel Dashboard:**
-   - Đăng nhập [vercel.com](https://vercel.com)
-   - Click vào project (typing-game-frontend)
-   - Vào **Settings** > **General**
-
-2. **Cấu hình Root Directory:**
-   - Tìm section **"Root Directory"**
-   - Nhập: `typing-game` ← **QUAN TRỌNG**
-   - Click **"Save"**
-
-3. **Redeploy:**
-   - Vào **Deployments** tab
-   - Click **"Redeploy"** on latest deployment
-   - Hoặc trigger new deployment bằng cách push code
-
-**✅ Alternative - Tạo project mới:**
-Nếu vẫn lỗi, có thể delete project và tạo lại:
-
-1. **Delete current project:**
-   - Settings > General > Delete Project
-
-2. **Import lại với config đúng:**
-   - New Project
-   - Import `aegold/TypingGame`
-   - **Root Directory:** `typing-game` (set ngay từ đầu)
-   - Framework Preset: Create React App
-   - Deploy
-
-**🚨 Verify Steps:**
-- Root Directory = `typing-game`
-- Framework = Create React App  
-- Build Command = `npm run build` (auto-detect)
-- Output Directory = `build` (auto-detect)
 
 ---
 

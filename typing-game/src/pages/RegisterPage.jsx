@@ -7,7 +7,7 @@ function RegisterPage() {
 
   const handleRegister = async () => {
     try {
-      await axios.post("/register", { username, password });
+      await axios.post("/api/register", { username, password });
       alert("Đăng ký thành công");
     } catch (err) {
       alert("Lỗi đăng ký");
