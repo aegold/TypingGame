@@ -50,6 +50,36 @@ app.get("/", (req, res) => {
   });
 });
 
+// Health check with database status
+app.get("/health", async (req, res) => {
+  try {
+    // Check MongoDB connection
+    const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    
+    // Count lessons
+    const Lesson = require("./models/lesson");
+    const lessonCount = await Lesson.countDocuments();
+    
+    res.json({
+      status: "OK",
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      lessons_count: lessonCount,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        FRONTEND_URL: process.env.FRONTEND_URL,
+        MONGODB_URI_exists: !!process.env.MONGODB_URI,
+        JWT_SECRET_exists: !!process.env.JWT_SECRET
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "ERROR",
+      error: err.message
+    });
+  }
+});
+
 const authRoutes = require("./routes/auth");
 app.use("/api", authRoutes);
 
@@ -59,19 +89,50 @@ app.use("/api", userRoutes);
 const lessonRoutes = require("./routes/lesson");
 app.use("/api/lessons", lessonRoutes);
 
+// Seed endpoint for initializing database with lessons
+app.post("/api/seed", async (req, res) => {
+  try {
+    const Lesson = require("./models/lesson");
+    
+    // Check if already seeded
+    const count = await Lesson.countDocuments();
+    if (count > 0) {
+      return res.json({
+        message: `Database already has ${count} lessons. No seeding needed.`,
+        lessons_count: count
+      });
+    }
+
+    // Run seed script
+    const { execSync } = require('child_process');
+    console.log("🌱 Starting database seed...");
+    execSync('node seedLessons.js', { stdio: 'inherit' });
+    
+    const newCount = await Lesson.countDocuments();
+    res.json({
+      message: "Database seeded successfully!",
+      lessons_count: newCount
+    });
+  } catch (err) {
+    console.error("❌ Seed error:", err);
+    res.status(500).json({
+      error: "Failed to seed database",
+      details: err.message
+    });
+  }
+});
+
 // Debug environment variables
-console.log("🔍 Environment check:");
+console.log("Environment check:");
 console.log("NODE_ENV:", process.env.NODE_ENV);
 console.log("PORT:", process.env.PORT);
 console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
-console.log("MONGODB_URI first 20 chars:", process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + "..." : "undefined");
 console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
 console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
 // Validate MONGODB_URI
 if (!process.env.MONGODB_URI) {
   console.error("❌ MONGODB_URI environment variable is not set!");
-  console.error("🚨 Go to Render Dashboard > Environment and add MONGODB_URI");
   process.exit(1);
 }
 
@@ -79,9 +140,10 @@ if (
   !process.env.MONGODB_URI.startsWith("mongodb://") &&
   !process.env.MONGODB_URI.startsWith("mongodb+srv://")
 ) {
-  console.error("❌ Invalid MONGODB_URI format. Must start with 'mongodb://' or 'mongodb+srv://'");
-  console.error("Current value first 50 chars:", process.env.MONGODB_URI.substring(0, 50) + "...");
-  console.error("🚨 Expected format: mongodb+srv://username:password@cluster...");
+  console.error(
+    "❌ Invalid MONGODB_URI format. Must start with 'mongodb://' or 'mongodb+srv://'"
+  );
+  console.error("Current value:", process.env.MONGODB_URI);
   process.exit(1);
 }
 
