@@ -13,7 +13,7 @@ function LessonsPage() {
     const fetchLessons = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("/api/lessons");
+        const response = await axios.get("/lessons");
         setLessons(response.data);
         setError(null);
       } catch (err) {

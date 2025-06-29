@@ -9,7 +9,7 @@ function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post("/api/login", { username, password });
+      const res = await axios.post("/login", { username, password });
       localStorage.setItem("token", res.data.token);
       navigate("/lessons");
     } catch (err) {

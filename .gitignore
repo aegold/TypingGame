@@ -83,7 +83,7 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-# public (removed - needed for React apps)
+public
 
 # Storybook build outputs
 .out
