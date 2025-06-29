@@ -1,0 +1,418 @@
+/* Letter Typing Game Layout - 60/40 split */
+.letter-typing-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Smooth transitions and animations */
+.letter-typing-layout * {
+  box-sizing: border-box;
+}
+
+/* Main container - 55% height */
+.letter-main-container {
+  height: 55vh;
+  min-height: 55vh;
+  max-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Sequence container - fits trong 55% height */
+.sequence-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.25) 100%
+  );
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+  padding: 16px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 8px;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Fade in animation for new sequences */
+.sequence-display {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-in;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Letter Items - optimized for 60% screen height */
+.letter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+  transition: all 0.3s ease;
+  margin: 4px;
+}
+
+.letter-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  font-size: 1.8rem;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Styling đặc biệt cho phím space */
+.letter-display.space-key {
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.letter-input {
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* States */
+.letter-item.current .letter-display {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  transform: scale(1.1);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
+  }
+}
+
+.letter-item.correct .letter-display {
+  border-color: #4caf50;
+  background: rgba(76, 175, 80, 0.3);
+  color: #333; /* Giữ màu đen cho chữ */
+  animation: success 0.4s ease-out;
+}
+
+@keyframes success {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.letter-item.correct .letter-input {
+  color: #4caf50;
+}
+
+.letter-item.incorrect .letter-display {
+  border-color: #f44336;
+  background: rgba(244, 67, 54, 0.3);
+  color: #f44336;
+  animation: shake 0.5s ease-in-out;
+}
+
+.letter-item.incorrect .letter-input {
+  color: #f44336;
+}
+
+/* Thêm styling cho phím space trong các trạng thái khác nhau */
+.letter-item.correct .letter-display.space-key {
+  border-color: #4caf50;
+  background: rgba(76, 175, 80, 0.2);
+  border-style: solid;
+}
+
+.letter-item.incorrect .letter-display.space-key {
+  border-color: #f44336;
+  background: rgba(244, 67, 54, 0.2);
+  border-style: solid;
+}
+
+.letter-item.current .letter-display.space-key {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.15);
+  border-style: solid;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+/* Cursor animation */
+.cursor {
+  animation: blink 1s infinite;
+  color: #ffd700;
+  font-size: 2rem;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Messages */
+.completion-message {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.completion-text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4caf50;
+  margin-bottom: 1rem;
+  animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Keyboard Section - 45% height */
+.keyboard-section {
+  height: 45vh;
+  min-height: 45vh;
+  max-height: 45vh;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+/* Responsive Design - maintain 55/45 split */
+@media (max-width: 768px) {
+  .letter-main-container {
+    height: 55vh;
+    padding: 6px;
+  }
+
+  .keyboard-section {
+    height: 45vh;
+    padding: 6px;
+  }
+
+  .sequence-display {
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .letter-display {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .letter-display.space-key {
+    font-size: 1rem;
+  }
+
+  .letter-input {
+    height: 20px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .letter-main-container {
+    height: 55vh;
+    padding: 4px;
+  }
+
+  .keyboard-section {
+    height: 45vh;
+    padding: 4px;
+  }
+
+  .sequence-display {
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .letter-display {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+
+  .letter-display.space-key {
+    font-size: 0.9rem;
+  }
+
+  .letter-input {
+    height: 18px;
+    font-size: 0.9rem;
+  }
+
+  .completion-text {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .letter-main-container {
+    height: 60vh;
+    padding: 4px;
+  }
+
+  .keyboard-section {
+    height: 40vh;
+    padding: 4px;
+  }
+
+  .letter-display {
+    width: 55px;
+    height: 55px;
+    font-size: 1.3rem;
+  }
+
+  .sequence-display {
+    padding: 12px;
+  }
+}
+
+@media (max-height: 500px) {
+  .letter-main-container {
+    height: 55vh;
+    padding: 2px;
+  }
+
+  .keyboard-section {
+    height: 45vh;
+    padding: 2px;
+  }
+
+  .letter-display {
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
+  }
+
+  .letter-input {
+    height: 16px;
+    font-size: 0.8rem;
+  }
+
+  .sequence-display {
+    gap: 4px;
+    padding: 8px;
+  }
+}
+
+/* Hide scrollbars but keep functionality */
+.sequence-container::-webkit-scrollbar {
+  display: none;
+}
+
+.sequence-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Focus management */
+.letter-typing-layout:focus-within {
+  outline: none;
+}

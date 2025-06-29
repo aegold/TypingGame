@@ -1,0 +1,631 @@
+/* Virtual Keyboard Standalone CSS - Maximum space utilization */
+.virtual-keyboard {
+  position: relative;
+  z-index: 10;
+  margin: 4px auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  user-select: none;
+  width: calc(100% - 8px);
+  max-width: 800px; /* Giới hạn chiều rộng tối đa */
+  min-width: 320px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.virtual-keyboard.active {
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 0 2px rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+  gap: 2px;
+  width: 100%;
+  min-height: 39px;
+}
+
+.keyboard-row:last-child {
+  margin-bottom: 0;
+}
+
+.keyboard-key {
+  position: relative;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  border: none;
+  border-radius: 6px;
+  color: #333;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  outline: none;
+  height: 35px;
+  min-width: 40px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 4px;
+  text-align: center;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keyboard-key::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(145deg, transparent, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.keyboard-key:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.keyboard-key:hover::before {
+  opacity: 1;
+}
+
+.keyboard-key.pressed,
+.keyboard-key:active {
+  transform: translateY(1px) scale(0.95);
+  background: linear-gradient(145deg, #4caf50, #45a049);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.keyboard-key:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.keyboard-key:disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Special Keys Styling */
+.special-key {
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  color: #495057;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 75px;
+}
+
+.special-key:hover {
+  background: linear-gradient(145deg, #e9ecef, #dee2e6);
+}
+
+.special-key.pressed,
+.special-key:active {
+  background: linear-gradient(145deg, #6c757d, #5a6268);
+  color: white;
+}
+
+/* Number row styling */
+.keyboard-row:first-child .keyboard-key {
+  background: linear-gradient(145deg, #fff3e0, #ffe0b2);
+  color: #e65100;
+  font-weight: 700;
+}
+
+.keyboard-row:first-child .keyboard-key:hover {
+  background: linear-gradient(145deg, #ffe0b2, #ffcc80);
+}
+
+.keyboard-row:first-child .keyboard-key.pressed,
+.keyboard-row:first-child .keyboard-key:active {
+  background: linear-gradient(145deg, #ff9800, #f57c00);
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .virtual-keyboard {
+    padding: 6px;
+    max-width: 100%;
+    margin: 2px auto;
+  }
+
+  .keyboard-key {
+    height: 32px;
+    font-size: 0.7rem;
+    padding: 0 2px;
+  }
+
+  /* Scale down all key widths for mobile */
+  .keyboard-key[style*="40px"] {
+    min-width: 32px;
+    width: 32px;
+  }
+  .keyboard-key[style*="50px"] {
+    min-width: 40px;
+    width: 40px;
+  }
+  .keyboard-key[style*="60px"] {
+    min-width: 48px;
+    width: 48px;
+  }
+  .keyboard-key[style*="75px"] {
+    min-width: 60px;
+    width: 60px;
+  }
+  .keyboard-key[style*="80px"] {
+    min-width: 64px;
+    width: 64px;
+  }
+  .keyboard-key[style*="85px"] {
+    min-width: 68px;
+    width: 68px;
+  }
+  .keyboard-key[style*="100px"] {
+    min-width: 80px;
+    width: 80px;
+  }
+  .keyboard-key[style*="115px"] {
+    min-width: 92px;
+    width: 92px;
+  }
+  .keyboard-key[style*="250px"] {
+    min-width: 200px;
+    width: 200px;
+  }
+
+  .keyboard-row {
+    gap: 1px;
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .virtual-keyboard {
+    padding: 4px;
+  }
+
+  .keyboard-key {
+    height: 28px;
+    font-size: 0.65rem;
+    padding: 0 1px;
+  }
+
+  /* Further scale down for small mobile */
+  .keyboard-key[style*="40px"] {
+    min-width: 28px;
+    width: 28px;
+  }
+  .keyboard-key[style*="50px"] {
+    min-width: 35px;
+    width: 35px;
+  }
+  .keyboard-key[style*="60px"] {
+    min-width: 42px;
+    width: 42px;
+  }
+  .keyboard-key[style*="75px"] {
+    min-width: 52px;
+    width: 52px;
+  }
+  .keyboard-key[style*="80px"] {
+    min-width: 56px;
+    width: 56px;
+  }
+  .keyboard-key[style*="85px"] {
+    min-width: 59px;
+    width: 59px;
+  }
+  .keyboard-key[style*="100px"] {
+    min-width: 70px;
+    width: 70px;
+  }
+  .keyboard-key[style*="115px"] {
+    min-width: 80px;
+    width: 80px;
+  }
+  .keyboard-key[style*="250px"] {
+    min-width: 175px;
+    width: 175px;
+  }
+
+  .keyboard-row {
+    gap: 1px;
+    margin-bottom: 1px;
+  }
+}
+
+/* Animation for keyboard appearance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.virtual-keyboard {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Glass effect enhancement */
+.virtual-keyboard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* Ensure keyboard doesn't interfere with background */
+.virtual-keyboard {
+  isolation: isolate;
+  contain: layout style paint;
+}
+
+/* Container for keyboard section to prevent background interference */
+.keyboard-section,
+.keyboard-bg-section {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2px;
+  flex-shrink: 0; /* Prevent shrinking */
+  overflow: visible; /* Ensure nothing gets cut off */
+  box-sizing: border-box;
+}
+
+/* Additional responsive optimization - prevent key cutoff */
+@media (max-height: 800px) {
+  .virtual-keyboard {
+    margin: 2px auto;
+    padding: 6px;
+  }
+
+  .keyboard-key {
+    min-width: 30px;
+    min-height: 32px;
+    padding: 4px 3px;
+    font-size: 0.8rem;
+  }
+
+  .keyboard-row {
+    margin-bottom: 3px;
+    gap: 2px;
+  }
+
+  .paragraph-typing-layout .keyboard-key {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .virtual-keyboard {
+    margin: 1px auto;
+    padding: 4px;
+  }
+
+  .keyboard-key {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 3px 2px;
+    font-size: 0.75rem;
+  }
+
+  .keyboard-row {
+    margin-bottom: 2px;
+    gap: 1px;
+  }
+
+  .paragraph-typing-layout .keyboard-key {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .virtual-keyboard {
+    margin: 1px auto;
+    padding: 3px;
+  }
+
+  .keyboard-key {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 2px 1px;
+    font-size: 0.7rem;
+  }
+
+  .keyboard-row {
+    margin-bottom: 1px;
+    gap: 1px;
+  }
+
+  .paragraph-typing-layout .keyboard-bg-section {
+    min-height: 150px;
+  }
+}
+
+/* Special large keyboard for ParagraphTypingGame */
+.paragraph-typing-layout .virtual-keyboard {
+  width: calc(100% - 8px);
+  max-width: 100%;
+  padding: 12px;
+  margin: 2px auto;
+}
+
+.paragraph-typing-layout .keyboard-key {
+  min-width: 42px;
+  min-height: 42px;
+  font-size: 1rem;
+  padding: 8px 6px;
+  max-width: 70px;
+}
+
+.paragraph-typing-layout .keyboard-row {
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.paragraph-typing-layout .special-key {
+  font-size: 0.9rem;
+  min-width: 70px;
+  padding: 8px 12px;
+}
+
+/* Letter Typing Game - maximize keyboard within container */
+.letter-typing-layout .virtual-keyboard {
+  width: calc(100% - 16px);
+  max-width: 100%;
+  margin: 4px auto;
+  padding: 10px;
+}
+
+.letter-typing-layout .keyboard-key {
+  min-width: 38px;
+  min-height: 38px;
+  font-size: 0.9rem;
+  max-width: 65px;
+}
+
+/* Word Typing Game - maximize keyboard */
+.typing-game .virtual-keyboard {
+  width: calc(100% - 8px);
+  max-width: 100%;
+  margin: 4px auto;
+  padding: 10px;
+}
+
+.typing-game .keyboard-key {
+  min-width: 40px;
+  min-height: 40px;
+  font-size: 0.95rem;
+  max-width: 68px;
+}
+
+/* 60% Keyboard Layout Specific Styles */
+.virtual-keyboard {
+  max-width: 800px; /* Giới hạn chiều rộng tối đa */
+}
+
+/* Specific styling for different key widths */
+.keyboard-key[style*="40px"] {
+  min-width: 40px;
+  width: 40px;
+}
+
+.keyboard-key[style*="50px"] {
+  min-width: 50px;
+  width: 50px;
+}
+
+.keyboard-key[style*="60px"] {
+  min-width: 60px;
+  width: 60px;
+}
+
+.keyboard-key[style*="75px"] {
+  min-width: 75px;
+  width: 75px;
+}
+
+.keyboard-key[style*="80px"] {
+  min-width: 80px;
+  width: 80px;
+}
+
+.keyboard-key[style*="85px"] {
+  min-width: 85px;
+  width: 85px;
+}
+
+.keyboard-key[style*="100px"] {
+  min-width: 100px;
+  width: 100px;
+}
+
+.keyboard-key[style*="115px"] {
+  min-width: 115px;
+  width: 115px;
+}
+
+.keyboard-key[style*="250px"] {
+  min-width: 250px;
+  width: 250px;
+  background: linear-gradient(145deg, #f1f3f4, #e8eaed);
+}
+
+.keyboard-key[style*="250px"]:hover {
+  background: linear-gradient(145deg, #e8eaed, #dadce0);
+}
+
+.keyboard-key[style*="250px"].pressed {
+  background: linear-gradient(145deg, #4285f4, #1a73e8);
+}
+
+/* Row-specific adjustments */
+.keyboard-row {
+  min-height: 39px;
+}
+
+.keyboard-row:nth-child(5) {
+  /* Bottom row with space bar */
+  margin-top: 2px;
+}
+
+/* Responsive breakpoints for 60% keyboard */
+@media (max-width: 768px) {
+  .virtual-keyboard {
+    padding: 6px;
+    max-width: 100%;
+    margin: 2px auto;
+  }
+
+  .keyboard-key {
+    height: 32px;
+    font-size: 0.7rem;
+    padding: 0 2px;
+  }
+
+  /* Scale down all key widths for mobile */
+  .keyboard-key[style*="40px"] {
+    min-width: 32px;
+    width: 32px;
+  }
+  .keyboard-key[style*="50px"] {
+    min-width: 40px;
+    width: 40px;
+  }
+  .keyboard-key[style*="60px"] {
+    min-width: 48px;
+    width: 48px;
+  }
+  .keyboard-key[style*="75px"] {
+    min-width: 60px;
+    width: 60px;
+  }
+  .keyboard-key[style*="80px"] {
+    min-width: 64px;
+    width: 64px;
+  }
+  .keyboard-key[style*="85px"] {
+    min-width: 68px;
+    width: 68px;
+  }
+  .keyboard-key[style*="100px"] {
+    min-width: 80px;
+    width: 80px;
+  }
+  .keyboard-key[style*="115px"] {
+    min-width: 92px;
+    width: 92px;
+  }
+  .keyboard-key[style*="250px"] {
+    min-width: 200px;
+    width: 200px;
+  }
+
+  .keyboard-row {
+    gap: 1px;
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .virtual-keyboard {
+    padding: 4px;
+  }
+
+  .keyboard-key {
+    height: 28px;
+    font-size: 0.65rem;
+    padding: 0 1px;
+  }
+
+  /* Further scale down for small mobile */
+  .keyboard-key[style*="40px"] {
+    min-width: 28px;
+    width: 28px;
+  }
+  .keyboard-key[style*="50px"] {
+    min-width: 35px;
+    width: 35px;
+  }
+  .keyboard-key[style*="60px"] {
+    min-width: 42px;
+    width: 42px;
+  }
+  .keyboard-key[style*="75px"] {
+    min-width: 52px;
+    width: 52px;
+  }
+  .keyboard-key[style*="80px"] {
+    min-width: 56px;
+    width: 56px;
+  }
+  .keyboard-key[style*="85px"] {
+    min-width: 59px;
+    width: 59px;
+  }
+  .keyboard-key[style*="100px"] {
+    min-width: 70px;
+    width: 70px;
+  }
+  .keyboard-key[style*="115px"] {
+    min-width: 80px;
+    width: 80px;
+  }
+  .keyboard-key[style*="250px"] {
+    min-width: 175px;
+    width: 175px;
+  }
+
+  .keyboard-row {
+    gap: 1px;
+    margin-bottom: 1px;
+  }
+}

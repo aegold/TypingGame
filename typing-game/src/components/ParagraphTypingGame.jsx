@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/TypingGame.css";
 import "../styles/ParagraphTypingGame.css";
 import VirtualKeyboard from "./VirtualKeyboard";
-import useKeyboardHighlight from "../hooks/useKeyboardHighlight";
+import useTypingSound from "../hooks/useTypingSound";
 
 function ParagraphTypingGame({
   onFinish,
@@ -20,6 +20,9 @@ function ParagraphTypingGame({
   const inputRef = useRef(null);
   const containerRef = useRef(null);
 
+  // Sound effect hook
+  const { playSound } = useTypingSound();
+
   // Ref để lưu callback và stats mới nhất, tránh closure issues
   const onFinishRef = useRef(onFinish);
   const statsRef = useRef({ correctChars: 0, incorrectChars: 0 });
@@ -29,10 +32,6 @@ function ParagraphTypingGame({
     onFinishRef.current = onFinish;
     statsRef.current = { correctChars, incorrectChars };
   }, [onFinish, correctChars, incorrectChars]);
-
-  // Sử dụng custom hook cho keyboard highlight
-  const { highlightKey, highlightVirtualKey } =
-    useKeyboardHighlight(isGameActive);
 
   // Auto-scroll đến vị trí đang gõ - tối ưu hóa
   useEffect(() => {
@@ -105,25 +104,45 @@ function ParagraphTypingGame({
   const handleVirtualKeyPress = (key) => {
     if (!isGameActive) return;
 
-    highlightVirtualKey(key);
-
     if (key === "backspace") {
       const newValue = userInput.slice(0, -1);
       setUserInput(newValue);
       setCurrentIndex(newValue.length);
       updateStats(newValue);
+      playSound(); // Phát sound cho backspace
     } else if (key === "enter") {
       restartGame();
+      playSound(); // Phát sound cho enter
     } else if (key === "space") {
       const newValue = userInput + " ";
       setUserInput(newValue);
       setCurrentIndex(newValue.length);
       updateStats(newValue);
+      playSound(); // Phát sound cho space
+    } else if (key === "shift" || key === "rshift") {
+      // Shift key - không làm gì trong paragraph typing
+      return;
+    } else if (
+      [
+        "tab",
+        "caps",
+        "ctrl",
+        "rctrl",
+        "alt",
+        "ralt",
+        "win",
+        "fn",
+        "menu",
+      ].includes(key)
+    ) {
+      // Các phím chức năng khác - không làm gì trong paragraph typing
+      return;
     } else {
       const newValue = userInput + key;
       setUserInput(newValue);
       setCurrentIndex(newValue.length);
       updateStats(newValue);
+      playSound(); // Phát sound cho các phím thông thường
     }
 
     // Focus lại vào input ẩn
@@ -150,12 +169,18 @@ function ParagraphTypingGame({
     setCorrectChars(correct);
     setIncorrectChars(incorrect);
   };
-
   // Xử lý thay đổi input ẩn
   const handleInputChange = (e) => {
     if (!isGameActive) return;
 
     const value = e.target.value;
+    const oldLength = userInput.length;
+
+    // Phát sound khi có thêm ký tự mới (không phải xóa)
+    if (value.length > oldLength) {
+      playSound();
+    }
+
     setUserInput(value);
     setCurrentIndex(value.length);
     updateStats(value);
@@ -378,7 +403,7 @@ function ParagraphTypingGame({
               onKeyPress={handleVirtualKeyPress}
               activeInput={userInput}
               isGameActive={isGameActive}
-              highlightKey={highlightKey}
+              enableKeyboardEvents={false}
             />
           </div>
         </div>

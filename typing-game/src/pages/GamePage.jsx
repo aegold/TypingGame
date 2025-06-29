@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import TypingGame from "../components/TypingGame";
 import ParagraphTypingGame from "../components/ParagraphTypingGame";
+import LetterTypingGame from "../components/LetterTypingGame";
 
 function GamePage() {
   const [result, setResult] = useState(null);
@@ -52,7 +53,7 @@ function GamePage() {
   };
 
   const handleRestart = () => setResult(null);
-  const handleDashboard = () => navigate("/dashboard");
+  const handleDashboard = () => navigate("/lessons");
 
   // Render component game dựa vào gameType
   const renderGameComponent = () => {
@@ -66,7 +67,13 @@ function GamePage() {
     }
     switch (lesson.gameType) {
       case "letterTyper":
-        return <div>Game gõ chữ chưa được hỗ trợ</div>;
+        return (
+          <LetterTypingGame
+            onFinish={handleGameFinish}
+            sequences={lesson.words} // words array sẽ chứa array of sequences
+            autoNextLevel={true}
+          />
+        );
       case "wordTyper":
         return (
           <TypingGame
@@ -131,6 +138,29 @@ function GamePage() {
                 Độ chính xác: <b>{Math.round(result.accuracy || 0)}%</b>
               </div>
             </div>
+          ) : lesson && lesson.gameType === "letterTyper" ? (
+            <div className="result-summary">
+              <div className="history-correct">
+                Tổng ký tự: <b>{result.totalCharacters || 0}</b>
+              </div>
+              <div className="history-wrong">
+                Số lỗi: <b>{result.errors || 0}</b>
+              </div>
+              <div className="history-accuracy">
+                Độ chính xác: <b>{result.accuracy || 0}%</b>
+              </div>
+              <div className="history-wpm">
+                Tốc độ: <b>{result.wpm || 0} WPM</b>
+              </div>
+              <div className="history-time">
+                Thời gian: <b>{result.timeSpent || 0}s</b>
+              </div>
+              {result.allSequencesCompleted && (
+                <div className="history-levels">
+                  Hoàn thành: <b>{result.totalSequences || 0} levels</b>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="result-summary">
               <div className="history-correct">
@@ -142,9 +172,9 @@ function GamePage() {
             </div>
           )}
 
-          {/* Chỉ hiển thị lịch sử từ cho game từ, không hiển thị cho paragraph */}
+          {/* Chỉ hiển thị lịch sử từ cho wordTyper, không hiển thị cho paragraph và letterTyper */}
           {lesson &&
-            lesson.gameType !== "paragraphTyper" &&
+            lesson.gameType === "wordTyper" &&
             result.correctResults &&
             result.wrongResults && (
               <div className="result-history">
@@ -192,7 +222,7 @@ function GamePage() {
               <span role="img" aria-label="dashboard">
                 🏠
               </span>{" "}
-              Về trang Dashboard
+              Về trang Lesson
             </button>
           </div>
         </div>

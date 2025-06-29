@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/TypingGame.css";
 import VirtualKeyboard from "./VirtualKeyboard";
-import useKeyboardHighlight from "../hooks/useKeyboardHighlight";
+import useTypingSound from "../hooks/useTypingSound";
 
 // Hàm tính khoảng cách Levenshtein
 function levenshtein(a, b) {
@@ -33,21 +33,11 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
   const [wrongResults, setWrongResults] = useState([]);
   const [animation, setAnimation] = useState(null);
   const [spellWarning, setSpellWarning] = useState("");
+  const [highlightKey, setHighlightKey] = useState("");
   const inputRef = useRef(null);
 
-  // Ref để lưu callback và stats mới nhất, tránh closure issues
-  const onFinishRef = useRef(onFinish);
-  const statsRef = useRef({ score: 0, correctResults: [], wrongResults: [] });
-
-  // Cập nhật refs khi props/state thay đổi
-  useEffect(() => {
-    onFinishRef.current = onFinish;
-    statsRef.current = { score, correctResults, wrongResults };
-  }, [onFinish, score, correctResults, wrongResults]);
-
-  // Sử dụng custom hook cho keyboard highlight
-  const { highlightKey, highlightVirtualKey } =
-    useKeyboardHighlight(isGameActive);
+  // Thêm sound hook
+  const { playSound } = useTypingSound();
 
   // Chọn một từ ngẫu nhiên từ danh sách words được truyền vào
   const getRandomWord = () => {
@@ -56,8 +46,8 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
     return words[randomIndex];
   };
 
-  // Restart game (đổi tên từ startGame)
-  const restartGame = () => {
+  // Khởi động game
+  const startGame = () => {
     setIsGameActive(true);
     setScore(0);
     setTimeLeft(timer);
@@ -105,59 +95,192 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
 
   // Xử lý thay đổi trong input
   const handleInputChange = (e) => {
-    setInputValue(e.target.value);
+    const newValue = e.target.value;
+    // Phát sound khi người dùng gõ
+    if (newValue.length > inputValue.length) {
+      playSound();
+    }
+    setInputValue(newValue);
   };
 
-  // Sửa handleVirtualKeyPress để sử dụng custom hook
+  // Xử lý nhấn phím vật lý để highlight trên bàn phím ảo
+  useEffect(() => {
+    if (!isGameActive) return;
+    const handleDown = (e) => {
+      let key = e.key.toLowerCase();
+
+      // Xử lý mapping cho các phím đặc biệt
+      const keyMap = {
+        " ": "space",
+        shift: "shift",
+        shiftleft: "shift",
+        shiftright: "rshift",
+        tab: "tab",
+        capslock: "caps",
+        control: "ctrl",
+        controlleft: "ctrl",
+        controlright: "rctrl",
+        alt: "alt",
+        altleft: "alt",
+        altright: "ralt",
+        meta: "win",
+        metaleft: "win",
+        metaright: "win",
+        contextmenu: "menu",
+      };
+
+      if (keyMap[key]) {
+        key = keyMap[key];
+      }
+
+      // Danh sách tất cả các phím hợp lệ
+      const validKeys = [
+        "backspace",
+        "enter",
+        "space",
+        "shift",
+        "rshift",
+        "tab",
+        "caps",
+        "ctrl",
+        "rctrl",
+        "alt",
+        "ralt",
+        "win",
+        "fn",
+        "menu",
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j",
+        "k",
+        "l",
+        "m",
+        "n",
+        "o",
+        "p",
+        "q",
+        "r",
+        "s",
+        "t",
+        "u",
+        "v",
+        "w",
+        "x",
+        "y",
+        "z",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "`",
+        "-",
+        "=",
+        "[",
+        "]",
+        "\\",
+        ";",
+        "'",
+        ",",
+        ".",
+        "/",
+      ];
+
+      if (validKeys.includes(key)) {
+        setHighlightKey(key);
+      }
+    };
+    const handleUp = () => setHighlightKey("");
+    window.addEventListener("keydown", handleDown);
+    window.addEventListener("keyup", handleUp);
+    return () => {
+      window.removeEventListener("keydown", handleDown);
+      window.removeEventListener("keyup", handleUp);
+    };
+  }, [isGameActive]);
+
+  // Sửa handleVirtualKeyPress để highlight khi nhấn phím ảo
   const handleVirtualKeyPress = (key) => {
     if (!isGameActive) return;
-    highlightVirtualKey(key);
+
+    setHighlightKey(key);
+    setTimeout(() => setHighlightKey(""), 150);
+
     if (key === "backspace") {
       setInputValue((prev) => prev.slice(0, -1));
+      playSound(); // Phát sound cho backspace
     } else if (key === "enter") {
       if (inputValue.trim() !== "") {
         checkWord();
+        playSound(); // Phát sound cho enter
       }
+    } else if (key === "shift" || key === "rshift") {
+      // Không làm gì với phím shift - chỉ highlight
+      return;
+    } else if (
+      [
+        "tab",
+        "caps",
+        "ctrl",
+        "rctrl",
+        "alt",
+        "ralt",
+        "win",
+        "fn",
+        "menu",
+      ].includes(key)
+    ) {
+      // Các phím chức năng khác - không làm gì trong typing game
+      return;
+    } else if (key === " ") {
+      // Xử lý phím space
+      setInputValue((prev) => prev + " ");
+      playSound(); // Phát sound cho space
     } else {
+      // Xử lý các phím thông thường (chữ cái, số, và dấu câu)
       setInputValue((prev) => prev + key);
+      playSound(); // Phát sound cho các phím thông thường
     }
+
     if (inputRef.current) {
       inputRef.current.focus();
     }
   };
 
-  // Đếm ngược thời gian - sử dụng ref để tránh closure issues
+  // Đếm ngược thời gian
   useEffect(() => {
-    let interval;
+    let timer;
     if (isGameActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
-            setIsGameActive(false);
-            // Sử dụng ref để lấy callback và stats mới nhất
-            if (onFinishRef.current) {
-              const { score, correctResults, wrongResults } = statsRef.current;
-              onFinishRef.current({
-                score,
-                correctResults,
-                wrongResults,
-              });
-            }
-            return 0;
-          }
-          if (prevTime <= 10) {
-            setAnimation("scaleNumber 2s infinite");
-          }
-          return prevTime - 1;
-        });
+      timer = setTimeout(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
       }, 1000);
-    }
-    return () => {
-      if (interval) {
-        clearInterval(interval);
+    } else if (timeLeft === 0 && isGameActive) {
+      setIsGameActive(false);
+      if (onFinish) {
+        onFinish({
+          score,
+          correctResults,
+          wrongResults,
+        });
       }
-    };
-  }, [isGameActive]); // Chỉ depend vào isGameActive
+    }
+    if (timeLeft <= 10 && timeLeft > 0) {
+      setAnimation("scaleNumber 2s infinite");
+    }
+    return () => clearTimeout(timer);
+  }, [timeLeft, isGameActive, onFinish, score, correctResults, wrongResults]);
 
   // Đặt focus vào input khi khởi động game
   useEffect(() => {
@@ -166,127 +289,143 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
     }
   }, [isGameActive]);
 
-  // Khởi tạo từ đầu tiên và tự động bắt đầu game
+  // Khởi tạo từ đầu tiên
   useEffect(() => {
-    if (words.length > 0) {
-      const firstWord = getRandomWord();
-      setWord(firstWord);
-      // Tự động bắt đầu game
-      setTimeout(() => {
-        setIsGameActive(true);
-        setScore(0);
-        setTimeLeft(timer);
-        setCorrectResults([]);
-        setWrongResults([]);
-        setInputValue("");
-        setAnimation(null);
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
-    }
-  }, [words, timer]);
+    setWord(getRandomWord());
+  }, []);
+
+  const isStopped = !isGameActive && timeLeft > 0 && timeLeft < timer;
+  const isNotStarted =
+    !isGameActive &&
+    timeLeft === timer &&
+    correctResults.length === 0 &&
+    wrongResults.length === 0;
 
   return (
     <div className="typing-game-new-layout">
-      <div className={`top-section${noTopMargin ? " no-top-margin" : ""}`}>
-        <div className="circle-timer">
-          <span className="timer-number">{timeLeft}</span>
-        </div>
-        <div className="center-content">
-          <div className="word-label">Từ cần điền</div>
-          <div className="current-word-line">
-            {words.length > 0 ? (
-              <>
-                <span className="current-word">{word}</span>
-              </>
-            ) : (
-              <div>Đang tải...</div>
-            )}
-          </div>
-          <div className="word-values input-center">
-            <input
-              ref={words.length > 0 ? inputRef : undefined}
-              type="text"
-              value={words.length > 0 ? inputValue : ""}
-              onChange={words.length > 0 ? handleInputChange : undefined}
-              onKeyPress={words.length > 0 ? handleKeyPress : undefined}
-              placeholder={words.length > 0 ? "Gõ từ này..." : "Đang tải..."}
-              className="word-input"
-              disabled={words.length === 0}
-              style={{
-                textAlign: "center",
-                fontSize: "1.25rem",
-                minWidth: 200,
-              }}
-            />
-          </div>
-          {/* Hiển thị nút chơi lại khi game dừng */}
-          {!isGameActive && timeLeft > 0 && timeLeft < timer && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginTop: 16,
-              }}
-            >
-              <button onClick={restartGame} className="start-button">
-                Chơi lại
-              </button>
-            </div>
-          )}
+      {/* Main container kéo dài toàn màn hình */}
+      <div className="typing-main-container">
+        {/* Game content section với layout 3 cột */}
+        <div className="typing-game-section">
+          <div className="typing-content-container">
+            {/* Layout 3 cột: timer - content - stats */}
+            <div className="typing-three-column-layout">
+              {/* Timer bên trái */}
+              <div className="timer-section">
+                <div className="large-timer">{timeLeft}s</div>
+              </div>
 
-          {/* Hiển thị cảnh báo chính tả */}
-          {spellWarning && isGameActive && (
-            <div
-              style={{
-                color: "#ff7eb3",
-                marginBottom: 8,
-                fontWeight: "bold",
-                fontSize: "1rem",
-                textAlign: "center",
-              }}
-            >
-              {spellWarning}
-            </div>
-          )}
+              {/* Game content ở giữa */}
+              <div className="game-content-center">
+                <div className="word-label">Từ cần điền</div>
+                <div className="current-word-line">
+                  {isGameActive ? (
+                    <span className="current-word">{word}</span>
+                  ) : (
+                    <span className="current-word-placeholder">
+                      Nhấn bắt đầu
+                    </span>
+                  )}
+                </div>
+                <div className="word-values input-center">
+                  <input
+                    ref={isGameActive ? inputRef : undefined}
+                    type="text"
+                    value={isGameActive ? inputValue : ""}
+                    onChange={isGameActive ? handleInputChange : undefined}
+                    onKeyPress={isGameActive ? handleKeyPress : undefined}
+                    placeholder={
+                      isGameActive ? "Gõ từ này..." : "Nhấn nút để bắt đầu..."
+                    }
+                    className="word-input"
+                    disabled={!isGameActive}
+                    style={{
+                      textAlign: "center",
+                      fontSize: "1.25rem",
+                      minWidth: 200,
+                    }}
+                  />
+                </div>
 
-          {/* Nút dừng game */}
-          {isGameActive && (
-            <button
-              onClick={() => setIsGameActive(false)}
-              className="restart-button"
-              style={{ marginTop: 16 }}
-            >
-              Dừng
-            </button>
-          )}
-        </div>
-        <div className="history-box">
-          <div className="history-title">Lịch sử</div>
-          <div className="history-counts">
-            <div className="history-correct">
-              Đúng: <b>{correctResults.length}</b>
-            </div>
-            <div className="history-wrong">
-              Sai: <b>{wrongResults.length}</b>
+                {/* Buttons */}
+                {isStopped && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginTop: 16,
+                    }}
+                  >
+                    <button onClick={startGame} className="start-button">
+                      Chơi lại
+                    </button>
+                  </div>
+                )}
+                {isNotStarted && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginTop: 16,
+                    }}
+                  >
+                    <button onClick={startGame} className="start-button">
+                      Bắt đầu
+                    </button>
+                  </div>
+                )}
+
+                {/* Hiển thị cảnh báo chính tả */}
+                {spellWarning && isGameActive && (
+                  <div
+                    style={{
+                      color: "#ff7eb3",
+                      marginTop: 8,
+                      fontWeight: "bold",
+                      fontSize: "1rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    {spellWarning}
+                  </div>
+                )}
+
+                {/* Nút dừng game */}
+                {isGameActive && (
+                  <button
+                    onClick={() => setIsGameActive(false)}
+                    className="restart-button"
+                    style={{ marginTop: 16 }}
+                  >
+                    Dừng
+                  </button>
+                )}
+              </div>
+
+              {/* Stats bên phải */}
+              <div className="stats-section">
+                <div className="typing-stats-box">
+                  <div className="stats-title">Thống kê</div>
+                  <div>Đúng: {correctResults.length}</div>
+                  <div>Sai: {wrongResults.length}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      {/* Bàn phím ảo - hiển thị khi có words */}
-      {words.length > 0 && (
-        <div className="keyboard-bg-section">
-          <div className="keyboard-section">
-            <VirtualKeyboard
-              onKeyPress={handleVirtualKeyPress}
-              activeInput={inputValue}
-              isGameActive={isGameActive}
-              highlightKey={highlightKey}
-            />
-          </div>
+
+      {/* Bàn phím ảo - luôn hiển thị */}
+      <div className="keyboard-bg-section">
+        <div className="keyboard-section">
+          <VirtualKeyboard
+            onKeyPress={handleVirtualKeyPress}
+            activeInput={inputValue}
+            isGameActive={isGameActive}
+            highlightKey={highlightKey}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 }

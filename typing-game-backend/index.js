@@ -6,11 +6,48 @@ const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// Security middleware
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Basic rate limiting (for production, use Redis-based solution)
+const requestCounts = new Map();
+const RATE_LIMIT = 100; // requests per minute
+const WINDOW_MS = 60 * 1000; // 1 minute
+
+app.use((req, res, next) => {
+  const clientIP = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+
+  if (!requestCounts.has(clientIP)) {
+    requestCounts.set(clientIP, { count: 1, resetTime: now + WINDOW_MS });
+  } else {
+    const clientData = requestCounts.get(clientIP);
+    if (now > clientData.resetTime) {
+      clientData.count = 1;
+      clientData.resetTime = now + WINDOW_MS;
+    } else {
+      clientData.count++;
+      if (clientData.count > RATE_LIMIT) {
+        return res.status(429).json({ error: "Too many requests" });
+      }
+    }
+  }
+  next();
+});
 
 app.get("/", (req, res) => {
-  res.send("Welcome to the API!");
+  res.json({
+    message: "Typing Game API",
+    version: "1.0.0",
+    status: "running",
+  });
 });
 
 const authRoutes = require("./routes/auth");
@@ -26,8 +63,9 @@ mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("Connected to MongoDB");
-    app.listen(process.env.PORT, () => {
-      console.log("Server is running on port " + process.env.PORT);
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((err) => console.error("MongoDB connection error:", err));
