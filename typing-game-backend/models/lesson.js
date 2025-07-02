@@ -39,6 +39,16 @@ const lessonSchema = new mongoose.Schema(
       min: 1,
       max: 600, // Max 10 phút
     },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: false,
+    },
+    order: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,

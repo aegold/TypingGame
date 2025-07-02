@@ -156,12 +156,12 @@ async function seedLessons() {
     console.log("Starting to seed lessons...");
     // Thêm dữ liệu mẫu
     const lessons = await Lesson.insertMany(sampleLessons);
-    console.log(`✅ Seeded ${lessons.length} lessons successfully:`);
+    console.log(`Seeded ${lessons.length} lessons successfully:`);
     lessons.forEach((l, index) => {
       console.log(`  ${index + 1}. ${l.title} (${l.gameType})`);
     });
   } catch (error) {
-    console.error("❌ Seeding error:", error);
+    console.error("Seeding error:", error);
     process.exit(1);
   } finally {
     await mongoose.disconnect();

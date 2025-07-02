@@ -84,7 +84,7 @@ const sampleLessons = [
 // POST /api/seed/lessons - Seed lessons data
 router.post("/lessons", async (req, res) => {
   try {
-    console.log("🌱 Starting lessons seed...");
+    console.log("Starting lessons seed...");
 
     // Check if already seeded
     const existingCount = await Lesson.countDocuments();
@@ -100,9 +100,9 @@ router.post("/lessons", async (req, res) => {
     }
 
     // Insert sample lessons
-    console.log("📚 Inserting sample lessons...");
+    console.log("Inserting sample lessons...");
     const result = await Lesson.insertMany(sampleLessons);
-    console.log(`✅ Successfully seeded ${result.length} lessons`);
+    console.log(`Successfully seeded ${result.length} lessons`);
 
     res.json({
       success: true,
@@ -112,7 +112,7 @@ router.post("/lessons", async (req, res) => {
       lessons: result.map((l) => ({ id: l._id, title: l.title })),
     });
   } catch (err) {
-    console.error("❌ Seed error:", err);
+    console.error("Seed error:", err);
     res.status(500).json({
       success: false,
       error: "Failed to seed lessons",

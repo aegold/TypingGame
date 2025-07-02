@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
     },
     totalScore: { type: Number, default: 0, min: 0 },
+    isAdmin: { type: Boolean, default: false },
     history: [
       {
         gameId: { type: String, required: true },

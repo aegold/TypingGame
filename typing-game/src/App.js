@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import RegisterPage from "./pages/RegisterPage";
 import LessonsPage from "./pages/LessonsPage";
 import LessonDetail from "./pages/LessonDetail";
-import LetterGameDemo from "./pages/LetterGameDemo";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/lessons" element={<LessonsPage />} />
           <Route path="/lessons/:id" element={<LessonDetail />} />
-          <Route path="/demo" element={<LetterGameDemo />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Router>
     </div>

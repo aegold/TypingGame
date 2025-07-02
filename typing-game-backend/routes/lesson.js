@@ -1,18 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const Lesson = require("../models/lesson");
+const adminAuth = require("../middleware/adminAuth");
 
-// Lấy tất cả bài học
+// Lấy tất cả bài học, hỗ trợ filter theo category (public)
 router.get("/", async (req, res) => {
   try {
-    const lessons = await Lesson.find();
+    const filter = {};
+    if (req.query.category) {
+      filter.category = req.query.category;
+    }
+    const lessons = await Lesson.find(filter).sort({
+      category: 1,
+      order: 1,
+      createdAt: -1,
+    });
     res.json(lessons);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Lấy chi tiết 1 bài học
+// Lấy chi tiết 1 bài học (public)
 router.get("/:id", async (req, res) => {
   try {
     // Validate ObjectId
@@ -30,10 +39,10 @@ router.get("/:id", async (req, res) => {
 });
 
 // Thêm bài học mới
-router.post("/", async (req, res) => {
+router.post("/", adminAuth, async (req, res) => {
   try {
-    const { title, videoUrl, words, gameType, timer } = req.body;
-
+    const { title, videoUrl, words, gameType, timer, category, order } =
+      req.body;
     // Input validation
     if (!title || !words || !gameType) {
       return res
@@ -41,7 +50,9 @@ router.post("/", async (req, res) => {
         .json({ message: "Title, words, and gameType are required" });
     }
 
-    if (!["letterTyper", "wordTyper", "paragraphTyper"].includes(gameType)) {
+    if (
+      ["letterTyper", "wordTyper", "paragraphTyper"].indexOf(gameType) === -1
+    ) {
       return res.status(400).json({ message: "Invalid gameType" });
     }
 
@@ -57,6 +68,8 @@ router.post("/", async (req, res) => {
       words,
       gameType,
       timer: timer || 30,
+      category: category || null,
+      order: order || 0,
     });
 
     const newLesson = await lesson.save();
@@ -68,9 +81,13 @@ router.post("/", async (req, res) => {
 });
 
 // Cập nhật bài học
-router.put("/:id", async (req, res) => {
+router.put("/:id", adminAuth, async (req, res) => {
   try {
-    const lesson = await Lesson.findByIdAndUpdate(req.params.id, req.body, {
+    const updateData = { ...req.body };
+    // Đảm bảo order và category có thể cập nhật
+    if (typeof updateData.order === "undefined") updateData.order = 0;
+    if (typeof updateData.category === "undefined") updateData.category = null;
+    const lesson = await Lesson.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
     if (!lesson) return res.status(404).json({ message: "Lesson not found" });
@@ -80,8 +97,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Xóa bài học
-router.delete("/:id", async (req, res) => {
+// Xóa bài học (admin only)
+router.delete("/:id", adminAuth, async (req, res) => {
   try {
     const lesson = await Lesson.findByIdAndDelete(req.params.id);
     if (!lesson) return res.status(404).json({ message: "Lesson not found" });

@@ -59,24 +59,22 @@ app.use("/api", userRoutes);
 const lessonRoutes = require("./routes/lesson");
 app.use("/api/lessons", lessonRoutes);
 
+const categoryRoutes = require("./routes/category");
+app.use("/api/categories", categoryRoutes);
+
 const seedRoutes = require("./routes/seed");
 app.use("/api/seed", seedRoutes);
 
-// Debug environment variables
-console.log("Environment check:");
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("PORT:", process.env.PORT);
-console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
-console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+const adminRoutes = require("./routes/admin");
+app.use("/api/admin", adminRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log("✅ Connected to MongoDB successfully");
+    console.log("Connected to MongoDB successfully");
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((err) => console.error("MongoDB connection error:", err));

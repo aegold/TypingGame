@@ -51,11 +51,19 @@ node seedLessons.js
 
 ### Lessons
 
-- `GET /api/lessons` - Lấy tất cả bài học
-- `GET /api/lessons/:id` - Lấy chi tiết bài học
-- `POST /api/lessons` - Tạo bài học mới
-- `PUT /api/lessons/:id` - Cập nhật bài học
-- `DELETE /api/lessons/:id` - Xóa bài học
+- `GET /api/lessons` - Lấy tất cả bài học (public)
+- `GET /api/lessons/:id` - Lấy chi tiết bài học (public)
+- `POST /api/lessons` - Tạo bài học mới (admin only)
+- `PUT /api/lessons/:id` - Cập nhật bài học (admin only)
+- `DELETE /api/lessons/:id` - Xóa bài học (admin only)
+
+### Categories
+
+- `GET /api/categories` - Lấy tất cả categories (admin only)
+- `GET /api/categories/:id` - Lấy chi tiết category (admin only)
+- `POST /api/categories` - Tạo category mới (admin only)
+- `PUT /api/categories/:id` - Cập nhật category (admin only)
+- `DELETE /api/categories/:id` - Xóa category (admin only)
 
 ## Database Schema
 

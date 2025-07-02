@@ -7,6 +7,7 @@
 **Last Updated:** $(Get-Date -Format "yyyy-MM-dd HH:mm")
 
 **All Issues Fixed:**
+
 - ✅ Missing `public` folder issue resolved
 - ✅ CORS configuration fixed
 - ✅ API endpoint mismatches corrected (all use `/api` prefix)
@@ -49,10 +50,11 @@ Repository: `https://github.com/aegold/TypingGame`
    **Frontend (Vercel) - Add vào Environment Variables:**
 
    ```bash
-   REACT_APP_API_URL=https://typing-game-backend-oegb.onrender.com/api
+   REACT_APP_API_URL=https://typing-game-backend-oegb.onrender.com
    ```
 
-   ⚠️ **CRITICAL:** 
+   ⚠️ **CRITICAL:**
+
    - `MONGODB_URI` phải có `mongodb+srv://` ở đầu!
    - `FRONTEND_URL` phải match EXACT domain Vercel!
    - `REACT_APP_API_URL` phải match EXACT domain Render!
@@ -64,12 +66,14 @@ Repository: `https://github.com/aegold/TypingGame`
 ## 📋 FINAL DEPLOYMENT CHECKLIST
 
 ### Before Deploying:
+
 - [ ] All code pushed to GitHub: `https://github.com/aegold/TypingGame`
 - [ ] Backend environment variables set on Render
 - [ ] Frontend environment variables set on Vercel
 - [ ] Verify `FRONTEND_URL` matches exact Vercel domain
 
 ### After Deploying:
+
 - [ ] Backend health check: `https://typing-game-backend-oegb.onrender.com/health`
 - [ ] Frontend loads: `https://typing-game-fe.vercel.app`
 - [ ] Test registration: Create new account
@@ -78,6 +82,7 @@ Repository: `https://github.com/aegold/TypingGame`
 - [ ] Check browser console for CORS/404 errors
 
 ### If Issues Occur:
+
 1. **CORS Error:** Check `FRONTEND_URL` on Render matches exact Vercel domain
 2. **404 API Errors:** All API calls now use `/api` prefix (fixed)
 3. **Build Failures:** Check Root Directory settings and environment variables
@@ -332,7 +337,7 @@ Frontend nằm trong thư mục `typing-game/` của repository.
 Trong Vercel dashboard, vào **Settings** > **Environment Variables**:
 
 ```
-REACT_APP_API_URL=https://your-backend-app.onrender.com/api
+REACT_APP_API_URL=https://your-backend-app.onrender.com
 ```
 
 ### 3.4. Redeploy
@@ -346,13 +351,16 @@ Sau khi thêm environment variables, click **"Redeploy"**
 ⚠️ **CRITICAL:** FRONTEND_URL phải match EXACT domain của Vercel
 
 1. **Get exact Vercel domain:**
+
    - Vào Vercel Dashboard > Project > Settings > Domains
    - Copy domain, ví dụ: `https://typing-game-fe.vercel.app`
 
 2. **Update FRONTEND_URL trên Render:**
+
    ```
    FRONTEND_URL=https://typing-game-fe.vercel.app
    ```
+
    (Thay thế bằng domain thực tế của bạn)
 
 3. **Save Changes** - Render sẽ auto-restart service
@@ -459,7 +467,7 @@ CORS policy error
 
 **Giải pháp:**
 
-- ✅ Verify REACT_APP_API_URL trong Vercel (phải có `/api` ở cuối)
+- ✅ Verify REACT_APP_API_URL trong Vercel (domain backend không có `/api` ở cuối)
 - ✅ Check CORS configuration trong Render (FRONTEND_URL phải khớp domain Vercel)
 - ✅ Check Network tab trong browser DevTools
 - ✅ Verify Render backend đang chạy (check logs)
@@ -467,25 +475,29 @@ CORS policy error
 ### ❌ CORS Policy Error - Access-Control-Allow-Origin:
 
 **Error message cụ thể:**
+
 ```
-Access to XMLHttpRequest at 'https://typing-game-backend-oegb.onrender.com/register' 
-from origin 'https://typing-game-fe.vercel.app' has been blocked by CORS policy: 
-Response to preflight request doesn't pass access control check: 
-The 'Access-Control-Allow-Origin' header has a value 'https://typing-game.vercel.app' 
+Access to XMLHttpRequest at 'https://typing-game-backend-oegb.onrender.com/register'
+from origin 'https://typing-game-fe.vercel.app' has been blocked by CORS policy:
+Response to preflight request doesn't pass access control check:
+The 'Access-Control-Allow-Origin' header has a value 'https://typing-game.vercel.app'
 that is not equal to the supplied origin.
 ```
 
 **🔍 Nguyên nhân:**
+
 - Backend CORS được cấu hình cho domain khác với frontend actual domain
 - `FRONTEND_URL` trên Render không khớp với Vercel deployment URL
 
 **💡 Cách fix ngay:**
 
 1. **Kiểm tra domain Vercel thực tế:**
+
    - Vào Vercel Dashboard > Project > Settings > Domains
    - Copy exact URL: `https://typing-game-fe.vercel.app`
 
 2. **Cập nhật FRONTEND_URL trên Render:**
+
    - Vào Render Dashboard > Service > Environment
    - Edit `FRONTEND_URL` = `https://typing-game-fe.vercel.app`
    - Click "Save Changes"
@@ -493,18 +505,20 @@ that is not equal to the supplied origin.
 3. **Service sẽ auto-restart**, check logs để verify
 
 **✅ Verify fix:**
+
 - Backend logs không có CORS errors
 - Frontend có thể call API thành công
 - Registration/login hoạt động
 
 **🚨 Alternative domains:**
 Nếu có multiple Vercel domains, có thể set multiple origins trong backend code:
+
 ```javascript
 // Trong index.js backend
 const allowedOrigins = [
-  'https://typing-game-fe.vercel.app',
-  'https://typing-game.vercel.app', 
-  'http://localhost:3000'
+  "https://typing-game-fe.vercel.app",
+  "https://typing-game.vercel.app",
+  "http://localhost:3000",
 ];
 ```
 
@@ -559,9 +573,9 @@ MongoDB connection timeout on cold start
 
 ### **Frontend (Vercel) Environment Variables:**
 
-| Variable            | Mô tả                           | Ví dụ                                          |
-| ------------------- | ------------------------------- | ---------------------------------------------- |
-| `REACT_APP_API_URL` | URL của backend API trên Render | `https://typing-game-backend.onrender.com/api` |
+| Variable            | Mô tả                           | Ví dụ                                      |
+| ------------------- | ------------------------------- | ------------------------------------------ |
+| `REACT_APP_API_URL` | URL của backend API trên Render | `https://typing-game-backend.onrender.com` |
 
 ### **🛡️ Bảo mật Environment Variables:**
 
