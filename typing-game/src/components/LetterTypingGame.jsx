@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/LetterTypingGame.css";
-import VirtualKeyboard from "./VirtualKeyboard";
+import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
 
 function LetterTypingGame({
@@ -185,41 +185,29 @@ function LetterTypingGame({
     }
   };
 
-  // Xử lý bàn phím ảo
-  const handleVirtualKeyPress = (key) => {
+  // Xử lý actions từ KeyboardManager
+  const handleKeyboardAction = (action) => {
     if (!isGameActive) return;
 
-    if (key === "backspace") {
-      // Quay lại ký tự trước đó nếu có thể
-      if (currentIndex > 0) {
-        const newProgress = [...userProgress];
-        newProgress[currentIndex - 1] = { status: "pending", input: "" };
-        setUserProgress(newProgress);
-        setCurrentIndex(currentIndex - 1);
-        playSound(); // Phát sound cho backspace
-      }
-    } else if (key === "shift" || key === "rshift") {
-      // Shift key - không làm gì trong letter typing
-      return;
-    } else if (
-      [
-        "tab",
-        "caps",
-        "ctrl",
-        "rctrl",
-        "alt",
-        "ralt",
-        "win",
-        "fn",
-        "menu",
-        "enter",
-      ].includes(key)
-    ) {
-      // Các phím chức năng khác - không làm gì trong letter typing
-      return;
-    } else {
-      handleKeyPress(key);
-      playSound(); // Phát sound cho các phím thông thường
+    switch (action.type) {
+      case ACTION_TYPES.GO_BACK_CHAR:
+        // Quay lại ký tự trước đó nếu có thể
+        if (currentIndex > 0) {
+          const newProgress = [...userProgress];
+          newProgress[currentIndex - 1] = { status: "pending", input: "" };
+          setUserProgress(newProgress);
+          setCurrentIndex(currentIndex - 1);
+        }
+        break;
+      case ACTION_TYPES.ADD_CHAR:
+        // Xử lý ký tự mới
+        handleKeyPress(action.payload);
+        break;
+      case ACTION_TYPES.NO_ACTION:
+        // Không làm gì
+        break;
+      default:
+        console.warn("Unknown action type:", action.type);
     }
 
     // Focus lại vào input ẩn
@@ -238,7 +226,13 @@ function LetterTypingGame({
     playSound();
 
     if (e.key === "Backspace") {
-      handleVirtualKeyPress("backspace");
+      // Quay lại ký tự trước đó nếu có thể
+      if (currentIndex > 0) {
+        const newProgress = [...userProgress];
+        newProgress[currentIndex - 1] = { status: "pending", input: "" };
+        setUserProgress(newProgress);
+        setCurrentIndex(currentIndex - 1);
+      }
     } else if (e.key === " ") {
       handleKeyPress("space");
     } else if (e.key === "Shift") {
@@ -275,6 +269,26 @@ function LetterTypingGame({
     });
   };
 
+  // Lấy ký tự tiếp theo cần gõ
+  const getNextKey = () => {
+    if (
+      !isGameActive ||
+      isCompleted ||
+      currentIndex >= currentSequence.length
+    ) {
+      return null;
+    }
+    return currentSequence[currentIndex];
+  };
+
+  // Game state cho KeyboardManager
+  const gameState = {
+    isGameActive,
+    inputValue: "", // LetterTypingGame không có inputValue
+  };
+
+  const nextKey = getNextKey();
+
   return (
     <div className="letter-typing-layout">
       {/* Input ẩn để xử lý keyboard events */}
@@ -309,13 +323,14 @@ function LetterTypingGame({
         </div>
       </div>
 
-      {/* Bàn phím ảo */}
+      {/* Bàn phím ảo - sử dụng KeyboardManager */}
       <div className="keyboard-section">
-        <VirtualKeyboard
-          onKeyPress={handleVirtualKeyPress}
-          activeInput=""
-          isGameActive={isGameActive}
+        <KeyboardManager
+          gameType="letterTyper"
+          gameState={gameState}
+          onAction={handleKeyboardAction}
           enableKeyboardEvents={false}
+          nextKey={nextKey}
         />
       </div>
     </div>

@@ -1,5 +1,3 @@
-import React from "react";
-import useTypingSound from "../hooks/useTypingSound";
 import useKeyboardHighlight from "../hooks/useKeyboardHighlight";
 import useKeyboardEvents from "../hooks/useKeyboardEvents";
 import "../styles/VirtualKeyboard.css";
@@ -9,9 +7,9 @@ function VirtualKeyboard({
   activeInput,
   isGameActive,
   enableKeyboardEvents = true,
+  nextKey = null, // Thêm prop để highlight key tiếp theo
 }) {
   // Sử dụng custom hooks
-  const { playSound } = useTypingSound();
   const { highlightKey, highlightVirtualKey } =
     useKeyboardHighlight(isGameActive);
 
@@ -102,9 +100,6 @@ function VirtualKeyboard({
     // Highlight key
     highlightVirtualKey(key);
 
-    // Không phát sound ở đây vì TypingGame sẽ xử lý sound
-    // playSound(); // Bỏ comment này
-
     // Xử lý các phím đặc biệt
     if (key === "space") {
       onKeyPress(" ");
@@ -148,7 +143,11 @@ function VirtualKeyboard({
               key={keyObj.key}
               className={`keyboard-key${
                 keyObj.isSpecial ? " special-key" : ""
-              }${highlightKey === keyObj.key ? " pressed" : ""}`}
+              }${highlightKey === keyObj.key ? " pressed" : ""}${
+                nextKey && keyObj.key.toLowerCase() === nextKey.toLowerCase()
+                  ? " next-key"
+                  : ""
+              }`}
               onClick={() => handleKeyClick(keyObj.key)}
               style={{ minWidth: keyObj.width }}
               disabled={!isGameActive}

@@ -99,6 +99,23 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Highlight cho key tiếp theo cần gõ */
+.keyboard-key.next-key {
+  background: linear-gradient(145deg, #ff9800, #f57c00);
+  color: white;
+  box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+  animation: nextKeyGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes nextKeyGlow {
+  from {
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+  }
+  to {
+    box-shadow: 0 0 25px rgba(255, 152, 0, 0.9);
+  }
+}
+
 .keyboard-key:disabled {
   opacity: 0.5;
   cursor: not-allowed;

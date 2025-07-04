@@ -59,8 +59,8 @@ node seedLessons.js
 
 ### Categories
 
-- `GET /api/categories` - Lấy tất cả categories (admin only)
-- `GET /api/categories/:id` - Lấy chi tiết category (admin only)
+- `GET /api/categories` - Lấy tất cả categories (public)
+- `GET /api/categories/:id` - Lấy chi tiết category (public)
 - `POST /api/categories` - Tạo category mới (admin only)
 - `PUT /api/categories/:id` - Cập nhật category (admin only)
 - `DELETE /api/categories/:id` - Xóa category (admin only)

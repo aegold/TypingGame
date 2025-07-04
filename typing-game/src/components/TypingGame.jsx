@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/TypingGame.css";
-import VirtualKeyboard from "./VirtualKeyboard";
+import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
 
 // Hàm tính khoảng cách Levenshtein
@@ -33,7 +33,6 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
   const [wrongResults, setWrongResults] = useState([]);
   const [animation, setAnimation] = useState(null);
   const [spellWarning, setSpellWarning] = useState("");
-  const [highlightKey, setHighlightKey] = useState("");
   const inputRef = useRef(null);
 
   // Thêm sound hook
@@ -103,157 +102,28 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
     setInputValue(newValue);
   };
 
-  // Xử lý nhấn phím vật lý để highlight trên bàn phím ảo
-  useEffect(() => {
-    if (!isGameActive) return;
-    const handleDown = (e) => {
-      let key = e.key.toLowerCase();
-
-      // Xử lý mapping cho các phím đặc biệt
-      const keyMap = {
-        " ": "space",
-        shift: "shift",
-        shiftleft: "shift",
-        shiftright: "rshift",
-        tab: "tab",
-        capslock: "caps",
-        control: "ctrl",
-        controlleft: "ctrl",
-        controlright: "rctrl",
-        alt: "alt",
-        altleft: "alt",
-        altright: "ralt",
-        meta: "win",
-        metaleft: "win",
-        metaright: "win",
-        contextmenu: "menu",
-      };
-
-      if (keyMap[key]) {
-        key = keyMap[key];
-      }
-
-      // Danh sách tất cả các phím hợp lệ
-      const validKeys = [
-        "backspace",
-        "enter",
-        "space",
-        "shift",
-        "rshift",
-        "tab",
-        "caps",
-        "ctrl",
-        "rctrl",
-        "alt",
-        "ralt",
-        "win",
-        "fn",
-        "menu",
-        "a",
-        "b",
-        "c",
-        "d",
-        "e",
-        "f",
-        "g",
-        "h",
-        "i",
-        "j",
-        "k",
-        "l",
-        "m",
-        "n",
-        "o",
-        "p",
-        "q",
-        "r",
-        "s",
-        "t",
-        "u",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-        "0",
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "`",
-        "-",
-        "=",
-        "[",
-        "]",
-        "\\",
-        ";",
-        "'",
-        ",",
-        ".",
-        "/",
-      ];
-
-      if (validKeys.includes(key)) {
-        setHighlightKey(key);
-      }
-    };
-    const handleUp = () => setHighlightKey("");
-    window.addEventListener("keydown", handleDown);
-    window.addEventListener("keyup", handleUp);
-    return () => {
-      window.removeEventListener("keydown", handleDown);
-      window.removeEventListener("keyup", handleUp);
-    };
-  }, [isGameActive]);
-
-  // Sửa handleVirtualKeyPress để highlight khi nhấn phím ảo
-  const handleVirtualKeyPress = (key) => {
-    if (!isGameActive) return;
-
-    setHighlightKey(key);
-    setTimeout(() => setHighlightKey(""), 150);
-
-    if (key === "backspace") {
-      setInputValue((prev) => prev.slice(0, -1));
-      playSound(); // Phát sound cho backspace
-    } else if (key === "enter") {
-      if (inputValue.trim() !== "") {
-        checkWord();
-        playSound(); // Phát sound cho enter
-      }
-    } else if (key === "shift" || key === "rshift") {
-      // Không làm gì với phím shift - chỉ highlight
-      return;
-    } else if (
-      [
-        "tab",
-        "caps",
-        "ctrl",
-        "rctrl",
-        "alt",
-        "ralt",
-        "win",
-        "fn",
-        "menu",
-      ].includes(key)
-    ) {
-      // Các phím chức năng khác - không làm gì trong typing game
-      return;
-    } else if (key === " ") {
-      // Xử lý phím space
-      setInputValue((prev) => prev + " ");
-      playSound(); // Phát sound cho space
-    } else {
-      // Xử lý các phím thông thường (chữ cái, số, và dấu câu)
-      setInputValue((prev) => prev + key);
-      playSound(); // Phát sound cho các phím thông thường
+  // Xử lý actions từ KeyboardManager
+  const handleKeyboardAction = (action) => {
+    switch (action.type) {
+      case ACTION_TYPES.ADD_CHAR:
+        setInputValue((prev) => prev + action.payload);
+        break;
+      case ACTION_TYPES.DELETE_CHAR:
+        setInputValue((prev) => prev.slice(0, -1));
+        break;
+      case ACTION_TYPES.SUBMIT_WORD:
+        if (action.payload !== "") {
+          checkWord();
+        }
+        break;
+      case ACTION_TYPES.NO_ACTION:
+        // Không làm gì
+        break;
+      default:
+        console.warn("Unknown action type:", action.type);
     }
 
+    // Focus vào input
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -300,6 +170,12 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
     timeLeft === timer &&
     correctResults.length === 0 &&
     wrongResults.length === 0;
+
+  // Game state cho KeyboardManager
+  const gameState = {
+    isGameActive,
+    inputValue,
+  };
 
   return (
     <div className="typing-game-new-layout">
@@ -415,14 +291,14 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
         </div>
       </div>
 
-      {/* Bàn phím ảo - luôn hiển thị */}
+      {/* Bàn phím ảo - sử dụng KeyboardManager */}
       <div className="keyboard-bg-section">
         <div className="keyboard-section">
-          <VirtualKeyboard
-            onKeyPress={handleVirtualKeyPress}
-            activeInput={inputValue}
-            isGameActive={isGameActive}
-            highlightKey={highlightKey}
+          <KeyboardManager
+            gameType="wordTyper"
+            gameState={gameState}
+            onAction={handleKeyboardAction}
+            enableKeyboardEvents={false}
           />
         </div>
       </div>

@@ -136,31 +136,22 @@
   white-space: pre;
 }
 
-.char-correct {
-  background-color: #c8e6c9;
-  color: #2e7d32;
+.paragraph-text span.char-correct {
+  background-color: #c8e6c9 !important;
+  color: #2e7d32 !important;
 }
 
-.char-incorrect {
-  background-color: #ffcdd2;
-  color: #c62828;
+.paragraph-text span.char-incorrect {
+  background-color: #ffcdd2 !important;
+  color: #c62828 !important;
 }
 
-.char-current {
-  background-color: #43c6ac;
-  color: white;
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
-    opacity: 0.3;
-  }
+.paragraph-text span.char-current {
+  background-color: #43c6ac !important;
+  color: #000 !important;
+  font-weight: bold !important;
+  border: 2px solid #2e7d32 !important;
+  border-radius: 3px !important;
 }
 
 /* Stats section */
@@ -191,6 +182,23 @@
   font-size: 1.3rem;
   display: block;
   margin-top: 5px;
+}
+
+/* Hands section - hiển thị bàn tay */
+.hands-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border-radius: 12px;
+  margin: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Keyboard section - 45% chiều cao màn hình */

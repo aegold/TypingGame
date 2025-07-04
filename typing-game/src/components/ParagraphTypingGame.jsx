@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/TypingGame.css";
 import "../styles/ParagraphTypingGame.css";
-import VirtualKeyboard from "./VirtualKeyboard";
+import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
 
 function ParagraphTypingGame({
@@ -100,49 +100,31 @@ function ParagraphTypingGame({
     }, 0);
   };
 
-  // Xử lý bàn phím ảo
-  const handleVirtualKeyPress = (key) => {
+  // Xử lý actions từ KeyboardManager
+  const handleKeyboardAction = (action) => {
     if (!isGameActive) return;
 
-    if (key === "backspace") {
-      const newValue = userInput.slice(0, -1);
-      setUserInput(newValue);
-      setCurrentIndex(newValue.length);
-      updateStats(newValue);
-      playSound(); // Phát sound cho backspace
-    } else if (key === "enter") {
-      restartGame();
-      playSound(); // Phát sound cho enter
-    } else if (key === "space") {
-      const newValue = userInput + " ";
-      setUserInput(newValue);
-      setCurrentIndex(newValue.length);
-      updateStats(newValue);
-      playSound(); // Phát sound cho space
-    } else if (key === "shift" || key === "rshift") {
-      // Shift key - không làm gì trong paragraph typing
-      return;
-    } else if (
-      [
-        "tab",
-        "caps",
-        "ctrl",
-        "rctrl",
-        "alt",
-        "ralt",
-        "win",
-        "fn",
-        "menu",
-      ].includes(key)
-    ) {
-      // Các phím chức năng khác - không làm gì trong paragraph typing
-      return;
-    } else {
-      const newValue = userInput + key;
-      setUserInput(newValue);
-      setCurrentIndex(newValue.length);
-      updateStats(newValue);
-      playSound(); // Phát sound cho các phím thông thường
+    switch (action.type) {
+      case ACTION_TYPES.ADD_CHAR:
+        const newValue = userInput + action.payload;
+        setUserInput(newValue);
+        setCurrentIndex(newValue.length);
+        updateStats(newValue);
+        break;
+      case ACTION_TYPES.DELETE_CHAR:
+        const newValueAfterDelete = userInput.slice(0, -1);
+        setUserInput(newValueAfterDelete);
+        setCurrentIndex(newValueAfterDelete.length);
+        updateStats(newValueAfterDelete);
+        break;
+      case ACTION_TYPES.RESTART_GAME:
+        restartGame();
+        break;
+      case ACTION_TYPES.NO_ACTION:
+        // Không làm gì
+        break;
+      default:
+        console.warn("Unknown action type:", action.type);
     }
 
     // Focus lại vào input ẩn
@@ -169,6 +151,7 @@ function ParagraphTypingGame({
     setCorrectChars(correct);
     setIncorrectChars(incorrect);
   };
+
   // Xử lý thay đổi input ẩn
   const handleInputChange = (e) => {
     if (!isGameActive) return;
@@ -308,6 +291,22 @@ function ParagraphTypingGame({
     });
   };
 
+  // Lấy ký tự tiếp theo cần gõ
+  const getNextKey = () => {
+    if (!isGameActive || currentIndex >= text.length) {
+      return null;
+    }
+    return text[currentIndex];
+  };
+
+  // Game state cho KeyboardManager
+  const gameState = {
+    isGameActive,
+    inputValue: userInput,
+  };
+
+  const nextKey = getNextKey();
+
   return (
     <div className="paragraph-typing-layout">
       {/* Main container kéo dài toàn màn hình */}
@@ -395,15 +394,16 @@ function ParagraphTypingGame({
         </div>
       </div>
 
-      {/* Bàn phím ảo - hiển thị khi có text */}
+      {/* Bàn phím ảo - sử dụng KeyboardManager */}
       {text && (
         <div className="keyboard-bg-section">
           <div className="keyboard-section">
-            <VirtualKeyboard
-              onKeyPress={handleVirtualKeyPress}
-              activeInput={userInput}
-              isGameActive={isGameActive}
+            <KeyboardManager
+              gameType="paragraphTyper"
+              gameState={gameState}
+              onAction={handleKeyboardAction}
               enableKeyboardEvents={false}
+              nextKey={nextKey}
             />
           </div>
         </div>

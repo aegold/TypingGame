@@ -13,6 +13,11 @@ function GamePage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // Hàm quay về trang lessons
+  const handleBackToLessons = () => {
+    navigate("/lessons");
+  };
+
   // Lấy thông tin lesson từ API
   useEffect(() => {
     const fetchLesson = async () => {
@@ -116,6 +121,26 @@ function GamePage() {
 
   return (
     <div className="gamepage-center">
+      {/* Nút quay về*/}
+      <button
+        onClick={handleBackToLessons}
+        style={{
+          position: "fixed",
+          top: "25px",
+          left: "100px",
+          zIndex: 1000,
+          padding: "8px 12px",
+          backgroundColor: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          fontSize: "14px",
+        }}
+      >
+        ← Quay lại
+      </button>
+
       {!result ? (
         renderGameComponent()
       ) : (

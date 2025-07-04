@@ -11,7 +11,7 @@ const useKeyboardHighlight = (isGameActive) => {
     const handleDown = (e) => {
       let key = e.key.toLowerCase();
 
-      // Xử lý mapping cho các phím đặc biệt
+      // Xử lý mapping cho các phím đặc biệt - đồng bộ với VirtualKeyboard
       const keyMap = {
         " ": "space",
         shift: "shift",

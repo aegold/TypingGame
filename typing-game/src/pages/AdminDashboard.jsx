@@ -431,6 +431,7 @@ const AdminDashboard = () => {
             </button>
           </div>
 
+          {/* Form create lesson */}
           {showCreateForm && (
             <div className="form-overlay">
               <div className="form-container">
@@ -562,6 +563,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* List lessons */}
           <div className="lessons-list">
             {lessons.length === 0 ? (
               <p>Chưa có bài học nào.</p>
