@@ -3,6 +3,7 @@ import "../styles/TypingGame.css";
 import "../styles/ParagraphTypingGame.css";
 import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
+import HandGuide from "./HandGuide";
 
 function ParagraphTypingGame({
   onFinish,
@@ -394,10 +395,11 @@ function ParagraphTypingGame({
         </div>
       </div>
 
-      {/* Bàn phím ảo - sử dụng KeyboardManager */}
+      {/* Bàn phím ảo + 2 bàn tay - layout 25%-50%-25% */}
       {text && (
-        <div className="keyboard-bg-section">
-          <div className="keyboard-section">
+        <div className="keyboard-hands-row">
+          <HandGuide type="left" nextKey={nextKey} />
+          <div className="keyboard-center">
             <KeyboardManager
               gameType="paragraphTyper"
               gameState={gameState}
@@ -406,6 +408,7 @@ function ParagraphTypingGame({
               nextKey={nextKey}
             />
           </div>
+          <HandGuide type="right" nextKey={nextKey} />
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/LetterTypingGame.css";
 import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
+import HandGuide from "./HandGuide";
 
 function LetterTypingGame({
   onFinish,
@@ -323,15 +324,19 @@ function LetterTypingGame({
         </div>
       </div>
 
-      {/* Bàn phím ảo - sử dụng KeyboardManager */}
-      <div className="keyboard-section">
-        <KeyboardManager
-          gameType="letterTyper"
-          gameState={gameState}
-          onAction={handleKeyboardAction}
-          enableKeyboardEvents={false}
-          nextKey={nextKey}
-        />
+      {/* Bàn phím ảo + 2 bàn tay - cùng 1 hàng */}
+      <div className="keyboard-hands-row">
+        <HandGuide type="left" nextKey={nextKey} />
+        <div className="keyboard-center">
+          <KeyboardManager
+            gameType="letterTyper"
+            gameState={gameState}
+            onAction={handleKeyboardAction}
+            enableKeyboardEvents={false}
+            nextKey={nextKey}
+          />
+        </div>
+        <HandGuide type="right" nextKey={nextKey} />
       </div>
     </div>
   );

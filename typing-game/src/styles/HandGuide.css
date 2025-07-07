@@ -1,0 +1,208 @@
+/* HandGuide Component Styles */
+
+/* Row chứa 2 bàn tay và bàn phím ảo */
+.keyboard-hands-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  height: 45vh;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  margin: 0 auto;
+  gap: 12px;
+  position: relative;
+  padding: 0;
+}
+
+.hand-guide {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  contain: layout style paint;
+}
+
+.hand {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hand-base {
+  width: 120px;
+  height: auto;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.finger-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.finger-overlay.active {
+  opacity: 1;
+  animation: fingerGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes fingerGlow {
+  from {
+    filter: brightness(1) drop-shadow(0 0 5px rgba(255, 152, 0, 0.6));
+  }
+  to {
+    filter: brightness(1.2) drop-shadow(0 0 15px rgba(255, 152, 0, 0.9));
+  }
+}
+
+/* Responsive Design - Ẩn hoàn toàn trên mobile và tablet */
+@media (max-width: 768px) {
+  .hand-guide {
+    display: none;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 769px) {
+  .hand-guide {
+    margin: 10px auto;
+  }
+
+  .hand-base {
+    width: 100px;
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1200px) {
+  .hand-guide {
+    max-width: 1000px;
+  }
+
+  .hand-base {
+    width: 120px;
+  }
+}
+
+/* Animation cho việc xuất hiện */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hand-guide {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Hover effects cho desktop */
+@media (min-width: 769px) {
+  .hand:hover .hand-base {
+    opacity: 1;
+  }
+
+  .finger-overlay:hover {
+    opacity: 0.3;
+  }
+
+  .finger-overlay.active:hover {
+    opacity: 1;
+  }
+}
+
+/* Tối ưu hóa cho performance */
+.hand-guide * {
+  will-change: opacity;
+}
+
+/* Đảm bảo hình ảnh load đúng */
+.hand-base,
+.finger-overlay {
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Keyboard layout styles */
+.keyboard-center {
+  flex: 0 0 50%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.hand.left-hand,
+.hand.right-hand {
+  flex: 0 0 25%;
+  min-width: 280px;
+  max-width: 350px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hand-base {
+  width: 100%;
+  max-width: 350px;
+  min-width: 250px;
+  height: auto;
+}
+
+@media (max-width: 1024px) {
+  .hand.left-hand,
+  .hand.right-hand {
+    flex: 0 0 20%;
+    min-width: 160px;
+    max-width: 220px;
+  }
+  .keyboard-center {
+    flex: 0 0 60%;
+  }
+  .hand-base {
+    max-width: 220px;
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .keyboard-hands-row {
+    height: 30vh;
+    gap: 4px;
+  }
+  .hand.left-hand,
+  .hand.right-hand {
+    display: none;
+  }
+  .keyboard-center {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .keyboard-hands-row {
+    height: 24vh;
+  }
+}

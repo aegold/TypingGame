@@ -479,14 +479,14 @@
 
 .keyboard-bg-section {
   width: 100%;
-  height: 40vh;
-  min-height: 40vh;
-  max-height: 40vh;
+  height: 45vh;
+  min-height: 45vh;
+  max-height: 45vh;
   background: rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
   align-items: stretch;
-  padding: 8px;
+  padding: 2px;
   margin: 0;
   overflow: hidden;
 }
@@ -939,13 +939,13 @@
 /* Extra small mobile screens */
 @media (max-width: 320px) {
   .typing-main-container {
-    height: 60vh;
-    padding: 2px;
+    height: 55vh;
+    padding: 1px;
   }
 
   .keyboard-bg-section {
-    height: 40vh;
-    padding: 2px;
+    height: 45vh;
+    padding: 1px;
   }
 
   .large-timer {
@@ -984,13 +984,13 @@
 /* Height-specific optimizations */
 @media (max-height: 600px) {
   .typing-main-container {
-    height: 60vh;
-    padding: 4px;
+    height: 55vh;
+    padding: 2px;
   }
 
   .keyboard-bg-section {
-    height: 40vh;
-    padding: 4px;
+    height: 45vh;
+    padding: 1px;
   }
 
   .large-timer {
@@ -1018,12 +1018,12 @@
 @media (max-height: 500px) {
   .typing-main-container {
     height: 55vh;
-    padding: 2px;
+    padding: 1px;
   }
 
   .keyboard-bg-section {
     height: 45vh;
-    padding: 2px;
+    padding: 1px;
   }
 
   .large-timer {
@@ -1080,13 +1080,13 @@
 
 @media (max-width: 768px) {
   .typing-main-container {
-    height: 60vh; /* Maintain 60% for top section */
-    padding: 6px;
+    height: 55vh; /* Maintain 55% for top section */
+    padding: 4px;
   }
 
   .keyboard-bg-section {
-    height: 40vh; /* Maintain 40% for keyboard */
-    padding: 6px;
+    height: 45vh; /* Maintain 45% for keyboard */
+    padding: 1px;
   }
 
   .typing-three-column-layout {
@@ -1137,13 +1137,13 @@
 
 @media (max-width: 480px) {
   .typing-main-container {
-    height: 60vh;
-    padding: 4px;
+    height: 55vh;
+    padding: 2px;
   }
 
   .keyboard-bg-section {
-    height: 40vh;
-    padding: 4px;
+    height: 45vh;
+    padding: 1px;
   }
 
   .typing-three-column-layout {

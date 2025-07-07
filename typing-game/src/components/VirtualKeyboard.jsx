@@ -133,6 +133,19 @@ function VirtualKeyboard({
   // Luôn gọi useKeyboardEvents nhưng chỉ hoạt động khi enableKeyboardEvents = true
   useKeyboardEvents(isGameActive && enableKeyboardEvents, handleKeyClick);
 
+  // Hàm kiểm tra nextKey highlight
+  const isNextKey = (keyObj, nextKey) => {
+    if (!nextKey) return false;
+
+    // Xử lý đặc biệt cho phím space
+    if (nextKey === " " && keyObj.key === "space") {
+      return true;
+    }
+
+    // Xử lý các phím thông thường
+    return keyObj.key.toLowerCase() === nextKey.toLowerCase();
+  };
+
   return (
     <div className={`virtual-keyboard ${isGameActive ? "active" : ""}`}>
       {/* Hiển thị layout bàn phím 60% */}
@@ -144,9 +157,7 @@ function VirtualKeyboard({
               className={`keyboard-key${
                 keyObj.isSpecial ? " special-key" : ""
               }${highlightKey === keyObj.key ? " pressed" : ""}${
-                nextKey && keyObj.key.toLowerCase() === nextKey.toLowerCase()
-                  ? " next-key"
-                  : ""
+                isNextKey(keyObj, nextKey) ? " next-key" : ""
               }`}
               onClick={() => handleKeyClick(keyObj.key)}
               style={{ minWidth: keyObj.width }}

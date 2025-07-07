@@ -40,14 +40,14 @@
   margin: 2px 0;
 }
 
-/* Main container tối ưu hóa không gian - 55% chiều cao màn hình */
+/* Main container - 55% chiều cao màn hình */
 .paragraph-main-container {
   height: 55vh;
   min-height: 55vh;
   max-height: 55vh;
   display: flex;
   flex-direction: column;
-  padding: 4px;
+  padding: 8px;
   position: relative;
   overflow: hidden;
 }
@@ -60,7 +60,7 @@
   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 8px;
+  padding: 12px;
   backdrop-filter: blur(10px);
   overflow: hidden;
   min-height: 0;
@@ -71,7 +71,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   flex-shrink: 0;
 }
 
@@ -79,14 +79,12 @@
   flex: 1;
   background: #fffde7;
   border-radius: 8px;
-  padding: 10px;
+  padding: 15px;
   box-shadow: 0 1px 6px rgba(67, 198, 172, 0.15);
   overflow-y: auto;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  min-height: 150px;
-  max-height: 250px;
   cursor: text;
   user-select: none;
 }
@@ -111,14 +109,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 80px; /* Giảm từ 150px xuống 80px */
+  height: 80px;
 }
 
 .game-controls {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 12px;
+  flex-shrink: 0;
 }
 
 /* Character states */
@@ -128,12 +127,6 @@
   border-radius: 0;
   box-sizing: border-box;
   margin: 0;
-}
-
-/* Special handling for space characters to allow proper word wrapping */
-.paragraph-text span + span:before {
-  content: "";
-  white-space: pre;
 }
 
 .paragraph-text span.char-correct {
@@ -154,100 +147,20 @@
   border-radius: 3px !important;
 }
 
-/* Stats section */
-.paragraph-stats {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.stats-row {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  gap: 20px;
-}
-
-.stat-item {
-  text-align: center;
-  font-size: 1.1rem;
-  color: #2e7d32;
-  flex: 1;
-}
-
-.stat-item strong {
-  color: #43c6ac;
-  font-size: 1.3rem;
-  display: block;
-  margin-top: 5px;
-}
-
-/* Hands section - hiển thị bàn tay */
-.hands-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
-  border-radius: 12px;
-  margin: 8px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Keyboard section - 45% chiều cao màn hình */
-.keyboard-bg-section {
-  height: 45vh;
-  min-height: 45vh;
-  max-height: 45vh;
-  flex-shrink: 0;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.keyboard-section {
-  max-height: none;
-  overflow: visible;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-/* Virtual keyboard styles moved to VirtualKeyboard.css */
-
-/* Responsive - đảm bảo bàn phím luôn hiển thị */
+/* Responsive Design */
 @media (max-width: 768px) {
   .paragraph-main-container {
-    padding: 5px;
+    height: 55vh;
+    padding: 6px;
   }
 
   .paragraph-text-section {
-    padding: 8px;
-  }
-
-  .paragraph-container {
-    min-height: 150px;
-    max-height: 250px;
+    padding: 10px;
   }
 
   .paragraph-text {
     font-size: 1.4rem;
     line-height: 1.6;
-  }
-
-  .paragraph-header-inner {
-    margin-bottom: 8px;
   }
 
   .simple-timer {
@@ -262,66 +175,29 @@
     min-width: 100px;
   }
 
-  .paragraph-container {
-    padding: 10px;
-  }
-
   .game-start-section {
-    height: 60px; /* Giảm từ 120px xuống 60px */
-  }
-
-  .keyboard-bg-section {
-    height: 40vh;
-    padding: 3px 5px 5px 5px;
-  }
-
-  .stats-row {
-    flex-direction: column;
-    gap: 10px;
+    height: 60px;
   }
 }
 
 @media (max-height: 700px) {
   .paragraph-main-container {
-    height: 55vh;
-    padding: 4px;
-  }
-
-  .keyboard-bg-section {
-    height: 45vh;
-    padding: 4px;
-  }
-
-  .paragraph-container {
-    min-height: 120px;
-    max-height: 200px;
+    height: 50vh;
+    padding: 6px;
   }
 
   .paragraph-text {
-    font-size: 1.5rem;
-    line-height: 1.6;
-  }
-
-  .paragraph-container {
-    padding: 10px;
+    font-size: 1.4rem;
+    line-height: 1.5;
   }
 
   .game-start-section {
-    height: 50px; /* Giảm từ 100px xuống 50px */
-  }
-
-  .paragraph-header-inner {
-    margin-bottom: 8px;
+    height: 50px;
   }
 }
 
 @media (max-height: 600px) {
   .paragraph-main-container {
-    height: 55vh;
-    padding: 5px;
-  }
-
-  .keyboard-bg-section {
     height: 45vh;
     padding: 4px;
   }
@@ -330,22 +206,9 @@
     padding: 8px;
   }
 
-  .paragraph-container {
-    min-height: 100px;
-    max-height: 150px;
-  }
-
   .paragraph-text {
     font-size: 1.3rem;
-    line-height: 1.5;
-  }
-
-  .paragraph-container {
-    padding: 8px;
-  }
-
-  .game-start-section {
-    height: 40px; /* Giảm từ 80px xuống 40px */
+    line-height: 1.4;
   }
 
   .simple-timer,
@@ -353,41 +216,8 @@
     padding: 5px 10px;
     font-size: 0.9rem;
   }
-}
 
-/* Responsive Design - maintain 55/45 split */
-@media (max-width: 768px) {
-  .paragraph-main-container {
-    height: 55vh;
-    padding: 6px;
-  }
-
-  .keyboard-bg-section {
-    height: 45vh;
-    padding: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .paragraph-main-container {
-    height: 55vh;
-    padding: 4px;
-  }
-
-  .keyboard-bg-section {
-    height: 45vh;
-    padding: 4px;
-  }
-}
-
-@media (max-width: 320px) {
-  .paragraph-main-container {
-    height: 55vh;
-    padding: 2px;
-  }
-
-  .keyboard-bg-section {
-    height: 45vh;
-    padding: 2px;
+  .game-start-section {
+    height: 40px;
   }
 }

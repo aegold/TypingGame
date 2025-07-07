@@ -2,8 +2,8 @@
 .virtual-keyboard {
   position: relative;
   z-index: 10;
-  margin: 4px auto;
-  padding: 8px;
+  margin: 0 auto;
+  padding: 4px;
   border-radius: 12px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25),
@@ -11,8 +11,8 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   user-select: none;
-  width: calc(100% - 8px);
-  max-width: 800px; /* Giới hạn chiều rộng tối đa */
+  width: calc(100% - 4px);
+  max-width: 950px; /* Tăng từ 800px lên 950px */
   min-width: 320px;
   transition: all 0.3s ease;
   display: flex;
@@ -29,10 +29,10 @@
 .keyboard-row {
   display: flex;
   justify-content: center;
-  margin-bottom: 4px;
-  gap: 2px;
+  margin-bottom: 3px;
+  gap: 3px;
   width: 100%;
-  min-height: 39px;
+  min-height: 42px;
 }
 
 .keyboard-row:last-child {
@@ -45,7 +45,7 @@
   border: none;
   border-radius: 6px;
   color: #333;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   cursor: pointer;
@@ -53,11 +53,11 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   outline: none;
-  height: 35px;
-  min-width: 40px;
+  height: 40px;
+  min-width: 44px;
   max-width: 100%;
   margin: 0;
-  padding: 0 4px;
+  padding: 0 6px;
   text-align: center;
   line-height: 1;
   display: flex;
@@ -327,7 +327,7 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 2px;
+  padding: 0;
   flex-shrink: 0; /* Prevent shrinking */
   overflow: visible; /* Ensure nothing gets cut off */
   box-sizing: border-box;
@@ -336,14 +336,14 @@
 /* Additional responsive optimization - prevent key cutoff */
 @media (max-height: 800px) {
   .virtual-keyboard {
-    margin: 2px auto;
-    padding: 6px;
+    margin: 0 auto;
+    padding: 2px;
   }
 
   .keyboard-key {
-    min-width: 30px;
-    min-height: 32px;
-    padding: 4px 3px;
+    min-width: 34px;
+    min-height: 36px;
+    padding: 4px 4px;
     font-size: 0.8rem;
   }
 
