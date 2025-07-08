@@ -1,5 +1,6 @@
 import useKeyboardHighlight from "../hooks/useKeyboardHighlight";
 import useKeyboardEvents from "../hooks/useKeyboardEvents";
+import { getFingerForKey } from "../constants/fingerMapping";
 import "../styles/VirtualKeyboard.css";
 
 function VirtualKeyboard({
@@ -133,17 +134,25 @@ function VirtualKeyboard({
   // Luôn gọi useKeyboardEvents nhưng chỉ hoạt động khi enableKeyboardEvents = true
   useKeyboardEvents(isGameActive && enableKeyboardEvents, handleKeyClick);
 
-  // Hàm kiểm tra nextKey highlight
-  const isNextKey = (keyObj, nextKey) => {
-    if (!nextKey) return false;
+  // Hàm kiểm tra nextKey highlight và trả về finger type
+  const getNextKeyInfo = (keyObj, nextKey) => {
+    if (!nextKey) return { isNext: false, finger: null };
 
+    let isNext = false;
     // Xử lý đặc biệt cho phím space
     if (nextKey === " " && keyObj.key === "space") {
-      return true;
+      isNext = true;
+    } else {
+      // Xử lý các phím thông thường
+      isNext = keyObj.key.toLowerCase() === nextKey.toLowerCase();
     }
 
-    // Xử lý các phím thông thường
-    return keyObj.key.toLowerCase() === nextKey.toLowerCase();
+    if (isNext) {
+      const finger = getFingerForKey(nextKey);
+      return { isNext: true, finger };
+    }
+
+    return { isNext: false, finger: null };
   };
 
   return (
@@ -151,21 +160,26 @@ function VirtualKeyboard({
       {/* Hiển thị layout bàn phím 60% */}
       {keyboardLayout.map((row, rowIndex) => (
         <div key={rowIndex} className="keyboard-row">
-          {row.map((keyObj) => (
-            <button
-              key={keyObj.key}
-              className={`keyboard-key${
-                keyObj.isSpecial ? " special-key" : ""
-              }${highlightKey === keyObj.key ? " pressed" : ""}${
-                isNextKey(keyObj, nextKey) ? " next-key" : ""
-              }`}
-              onClick={() => handleKeyClick(keyObj.key)}
-              style={{ minWidth: keyObj.width }}
-              disabled={!isGameActive}
-            >
-              {keyObj.key === "space" ? "Space" : keyObj.display}
-            </button>
-          ))}
+          {row.map((keyObj) => {
+            const nextKeyInfo = getNextKeyInfo(keyObj, nextKey);
+            return (
+              <button
+                key={keyObj.key}
+                className={`keyboard-key${
+                  keyObj.isSpecial ? " special-key" : ""
+                }${highlightKey === keyObj.key ? " pressed" : ""}${
+                  nextKeyInfo.isNext
+                    ? ` next-key ${nextKeyInfo.finger || ""}`
+                    : ""
+                }`}
+                onClick={() => handleKeyClick(keyObj.key)}
+                style={{ minWidth: keyObj.width }}
+                disabled={!isGameActive}
+              >
+                {keyObj.key === "space" ? "Space" : keyObj.display}
+              </button>
+            );
+          })}
         </div>
       ))}
     </div>
