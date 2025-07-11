@@ -293,7 +293,7 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
 
       {/* Bàn phím ảo - sử dụng KeyboardManager */}
       <div className="keyboard-bg-section">
-        <div className="keyboard-section">
+        <div className="typing-keyboard-section">
           <KeyboardManager
             gameType="wordTyper"
             gameState={gameState}

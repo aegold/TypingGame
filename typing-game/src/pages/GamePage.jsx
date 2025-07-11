@@ -4,6 +4,7 @@ import axios from "../api/axios";
 import TypingGame from "../components/TypingGame";
 import ParagraphTypingGame from "../components/ParagraphTypingGame";
 import LetterTypingGame from "../components/LetterTypingGame";
+import VietnameseLetterTypingGame from "../components/VietnameseLetterTypingGame";
 
 function GamePage() {
   const [result, setResult] = useState(null);
@@ -97,6 +98,13 @@ function GamePage() {
             words={lesson.words}
           />
         );
+      case "vietnameseLetterTyper":
+        return (
+          <VietnameseLetterTypingGame
+            lesson={lesson}
+            onComplete={(data) => handleGameFinish(data)}
+          />
+        );
       default:
         return <div>Game type không được hỗ trợ</div>;
     }
@@ -161,6 +169,18 @@ function GamePage() {
               </div>
               <div className="history-accuracy">
                 Độ chính xác: <b>{Math.round(result.accuracy || 0)}%</b>
+              </div>
+            </div>
+          ) : lesson && lesson.gameType === "vietnameseLetterTyper" ? (
+            <div className="result-summary">
+              <div className="history-correct">
+                Ký tự hoàn thành: <b>{result.completedCharacters || 0}</b>
+              </div>
+              <div className="history-total">
+                Tổng ký tự: <b>{result.totalCharacters || 0}</b>
+              </div>
+              <div className="history-accuracy">
+                Độ chính xác: <b>{result.accuracy || 0}%</b>
               </div>
             </div>
           ) : lesson && lesson.gameType === "letterTyper" ? (

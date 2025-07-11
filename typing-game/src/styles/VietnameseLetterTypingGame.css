@@ -1,0 +1,208 @@
+/* Vietnamese Letter Typing Game Styles */
+.vietnamese-letter-typing-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  width: 100%;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Target Character Display */
+.target-section {
+  text-align: center;
+  margin: 0;
+}
+
+.target-char {
+  font-size: 4em;
+  font-weight: bold;
+  color: #2196f3;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 10px 0;
+}
+
+/* Key Sequence Display */
+.key-sequence {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 5px 0;
+}
+
+.key-box {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  font-weight: bold;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.key-box.completed {
+  background: #e8f5e8;
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.key-box.completed::after {
+  content: "✓";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #4caf50;
+  color: white;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+}
+
+.key-box.current {
+  background: #e3f2fd;
+  border-color: #2196f3;
+  color: #2196f3;
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 0 15px rgba(33, 150, 243, 0.3);
+}
+
+.key-box.pending {
+  background: #f5f5f5;
+  border-color: #ccc;
+  color: #999;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Input Section */
+.input-section {
+  width: 100%;
+  max-width: 350px;
+  margin: 5px 0;
+}
+
+.game-input {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 1.1em;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  text-align: center;
+  background: #fafafa;
+  color: #333;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.game-input:focus {
+  border-color: #2196f3;
+  background: white;
+}
+
+/* Completion State */
+.vietnamese-letter-typing-game.completed {
+  justify-content: center;
+  min-height: 400px;
+}
+
+.completion-message {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.completion-message h2 {
+  color: #4caf50;
+  margin-bottom: 15px;
+  font-size: 2.5em;
+}
+
+.completion-message p {
+  color: #666;
+  font-size: 1.2em;
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  font-size: 1.5em;
+  color: #666;
+  padding: 40px;
+}
+
+/* Keyboard and Hand Guides Layout - override HandGuide.css for full width */
+.vietnamese-letter-typing-game .keyboard-hands-row {
+  margin: 0;
+  border-radius: 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 10px 0;
+  min-height: 250px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .vietnamese-letter-typing-game {
+    gap: 10px;
+    padding: 5px;
+  }
+
+  .target-char {
+    font-size: 3em;
+    margin: 5px 0;
+  }
+
+  .key-box {
+    width: 45px;
+    height: 45px;
+    font-size: 1.2em;
+  }
+
+  .key-sequence {
+    gap: 8px;
+  }
+
+  .game-input {
+    font-size: 1em;
+    padding: 8px 12px;
+  }
+
+  .keyboard-hands-row {
+    flex-direction: column;
+    min-height: auto;
+    gap: 10px;
+    padding: 5px 0;
+  }
+
+  .hand.left-hand,
+  .hand.right-hand {
+    display: none; /* Hide hands on mobile like other games */
+  }
+
+  .keyboard-center {
+    flex: 1;
+    width: 100%;
+  }
+}

@@ -163,6 +163,11 @@ const AdminDashboard = () => {
         if (Array.isArray(parsed) && typeof parsed[0] === "string") {
           parsed = [parsed];
         }
+      } else if (formData.gameType === "vietnameseLetterTyper") {
+        // Vietnamese characters should be an array of single characters
+        if (Array.isArray(parsed) && typeof parsed[0] === "string") {
+          return parsed;
+        }
       }
       return parsed;
     } catch {
@@ -170,6 +175,9 @@ const AdminDashboard = () => {
       let arr = wordsString.split("\n").filter((word) => word.trim());
       if (formData.gameType === "letterTyper") {
         arr = [arr];
+      } else if (formData.gameType === "vietnameseLetterTyper") {
+        // For Vietnamese, each line should be a single character
+        return arr;
       }
       return arr;
     }
@@ -251,6 +259,7 @@ const AdminDashboard = () => {
       letterTyper: "Gõ chữ cái",
       wordTyper: "Gõ từ",
       paragraphTyper: "Gõ đoạn văn",
+      vietnameseLetterTyper: "Gõ ký tự tiếng Việt",
     };
     return labels[gameType] || gameType;
   };
@@ -263,6 +272,8 @@ const AdminDashboard = () => {
         'Nhập các từ, mỗi từ một dòng:\ncat\ndog\nhouse\nbook\n\nHoặc nhập dạng JSON: ["cat", "dog", "house", "book"]',
       paragraphTyper:
         "Nhập đoạn văn bản hoàn chỉnh:\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      vietnameseLetterTyper:
+        'Nhập các ký tự tiếng Việt, mỗi ký tự một dòng:\ná\nà\nả\nã\nạ\nâ\nấ\nầ\n\nHoặc nhập dạng JSON: ["á", "à", "ả", "ã", "ạ"]',
     };
     return placeholders[gameType] || "";
   };
@@ -272,6 +283,7 @@ const AdminDashboard = () => {
       letterTyper: "Chữ cái cần gõ:",
       wordTyper: "Từ cần gõ:",
       paragraphTyper: "Đoạn văn cần gõ:",
+      vietnameseLetterTyper: "Ký tự tiếng Việt cần học:",
     };
     return labels[gameType] || "Nội dung:";
   };
@@ -470,6 +482,9 @@ const AdminDashboard = () => {
                       <option value="letterTyper">Gõ chữ cái</option>
                       <option value="wordTyper">Gõ từ</option>
                       <option value="paragraphTyper">Gõ đoạn văn</option>
+                      <option value="vietnameseLetterTyper">
+                        Gõ ký tự tiếng Việt
+                      </option>
                     </select>
                   </div>
 
@@ -541,6 +556,13 @@ const AdminDashboard = () => {
                         <p>
                           Nhập một đoạn văn bản hoàn chỉnh để người dùng gõ
                           theo.
+                        </p>
+                      )}
+                      {formData.gameType === "vietnameseLetterTyper" && (
+                        <p>
+                          Nhập các ký tự tiếng Việt có dấu, mỗi ký tự một dòng.
+                          Ví dụ: á, à, ả, ã, ạ, â, ấ, ầ, ă, ắ, ằ, đ, v.v. Người
+                          dùng sẽ học cách gõ Telex để tạo ra các ký tự này.
                         </p>
                       )}
                     </div>

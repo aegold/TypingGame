@@ -413,7 +413,7 @@
   font-size: 1.1rem;
   font-weight: bold;
 }
-.keyboard-section {
+.typing-keyboard-section {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -491,12 +491,12 @@
   overflow: hidden;
 }
 
-.keyboard-section {
+.typing-keyboard-section {
   width: 100%;
-  height: 100%;
+  height: 85%;
   display: flex;
   justify-content: center;
-  align-items: stretch;
+  align-items: center;
   overflow: hidden;
 }
 

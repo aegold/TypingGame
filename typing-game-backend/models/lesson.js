@@ -28,8 +28,14 @@ const lessonSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: {
-        values: ["letterTyper", "wordTyper", "paragraphTyper"],
-        message: "GameType must be letterTyper, wordTyper, or paragraphTyper",
+        values: [
+          "letterTyper",
+          "wordTyper",
+          "paragraphTyper",
+          "vietnameseLetterTyper",
+        ],
+        message:
+          "GameType must be letterTyper, wordTyper, paragraphTyper, or vietnameseLetterTyper",
       },
     },
     timer: {

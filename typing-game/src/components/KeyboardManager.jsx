@@ -66,6 +66,16 @@ const createAction = (gameType, key, gameState) => {
       }
       break;
 
+    case "vietnameseLetterTyper":
+      if (key === "backspace") {
+        return { type: ACTION_TYPES.DELETE_CHAR };
+      } else if (key === "enter") {
+        return { type: ACTION_TYPES.NO_ACTION };
+      } else if (key.length === 1) {
+        return { type: ACTION_TYPES.ADD_CHAR, payload: key };
+      }
+      break;
+
     default:
       return { type: ACTION_TYPES.NO_ACTION };
   }

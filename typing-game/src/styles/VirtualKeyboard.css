@@ -108,154 +108,154 @@
 
 /* Màu sắc cho từng ngón tay - Tay trái */
 .keyboard-key.next-key.left_cai {
-  background: linear-gradient(145deg, #27cafc, #1ea5cc);
-  box-shadow: 0 0 15px rgba(39, 202, 252, 0.6);
+  background: linear-gradient(145deg, #f37152, #d35841);
+  box-shadow: 0 0 15px rgba(243, 113, 82, 0.6);
   animation: leftCaiGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.left_ap_ut {
-  background: linear-gradient(145deg, #f934ca, #c727a2);
-  box-shadow: 0 0 15px rgba(249, 52, 202, 0.6);
+  background: linear-gradient(145deg, #43ed4b, #37c63e);
+  box-shadow: 0 0 15px rgba(67, 237, 75, 0.6);
   animation: leftApUtGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.left_giua {
-  background: linear-gradient(145deg, #b670fc, #9254ca);
-  box-shadow: 0 0 15px rgba(182, 112, 252, 0.6);
+  background: linear-gradient(145deg, #ad4df2, #9041d1);
+  box-shadow: 0 0 15px rgba(173, 77, 242, 0.6);
   animation: leftGiuaGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.left_tro {
-  background: linear-gradient(145deg, #594dfc, #4a3dca);
-  box-shadow: 0 0 15px rgba(89, 77, 252, 0.6);
+  background: linear-gradient(145deg, #f34bc5, #d13fa4);
+  box-shadow: 0 0 15px rgba(243, 75, 197, 0.6);
   animation: leftTroGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.left_ut {
-  background: linear-gradient(145deg, #f45a5a, #c24848);
-  box-shadow: 0 0 15px rgba(244, 90, 90, 0.6);
+  background: linear-gradient(145deg, #21cef2, #1ba8c9);
+  box-shadow: 0 0 15px rgba(33, 206, 242, 0.6);
   animation: leftUtGlow 1.5s ease-in-out infinite alternate;
 }
 
 /* Màu sắc cho từng ngón tay - Tay phải */
 .keyboard-key.next-key.right_cai {
-  background: linear-gradient(145deg, #27fd4f, #1eca3f);
-  box-shadow: 0 0 15px rgba(39, 253, 79, 0.6);
+  background: linear-gradient(145deg, #606af2, #4f57d1);
+  box-shadow: 0 0 15px rgba(96, 106, 242, 0.6);
   animation: rightCaiGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.right_ap_ut {
-  background: linear-gradient(145deg, #fd9d3a, #ca7e2e);
-  box-shadow: 0 0 15px rgba(253, 157, 58, 0.6);
+  background: linear-gradient(145deg, #29b287, #22936f);
+  box-shadow: 0 0 15px rgba(41, 178, 135, 0.6);
   animation: rightApUtGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.right_giua {
-  background: linear-gradient(145deg, #fcbc29, #ca9621);
-  box-shadow: 0 0 15px rgba(252, 188, 41, 0.6);
+  background: linear-gradient(145deg, #f3f33e, #d1d135);
+  box-shadow: 0 0 15px rgba(243, 243, 62, 0.6);
   animation: rightGiuaGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.right_tro {
-  background: linear-gradient(145deg, #f2fd51, #c2ca41);
-  box-shadow: 0 0 15px rgba(242, 253, 81, 0.6);
+  background: linear-gradient(145deg, #f38626, #d16f20);
+  box-shadow: 0 0 15px rgba(243, 134, 38, 0.6);
   animation: rightTroGlow 1.5s ease-in-out infinite alternate;
 }
 
 .keyboard-key.next-key.right_ut {
-  background: linear-gradient(145deg, #fc3311, #ca290e);
-  box-shadow: 0 0 15px rgba(252, 51, 17, 0.6);
+  background: linear-gradient(145deg, #eabbf2, #c89ad1);
+  box-shadow: 0 0 15px rgba(234, 187, 242, 0.6);
   animation: rightUtGlow 1.5s ease-in-out infinite alternate;
 }
 
 /* Keyframe animations cho từng ngón tay */
 @keyframes leftCaiGlow {
   from {
-    box-shadow: 0 0 15px rgba(39, 202, 252, 0.6);
+    box-shadow: 0 0 15px rgba(243, 113, 82, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(39, 202, 252, 0.9);
+    box-shadow: 0 0 25px rgba(243, 113, 82, 0.9);
   }
 }
 
 @keyframes leftApUtGlow {
   from {
-    box-shadow: 0 0 15px rgba(249, 52, 202, 0.6);
+    box-shadow: 0 0 15px rgba(67, 237, 75, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(249, 52, 202, 0.9);
+    box-shadow: 0 0 25px rgba(67, 237, 75, 0.9);
   }
 }
 
 @keyframes leftGiuaGlow {
   from {
-    box-shadow: 0 0 15px rgba(182, 112, 252, 0.6);
+    box-shadow: 0 0 15px rgba(173, 77, 242, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(182, 112, 252, 0.9);
+    box-shadow: 0 0 25px rgba(173, 77, 242, 0.9);
   }
 }
 
 @keyframes leftTroGlow {
   from {
-    box-shadow: 0 0 15px rgba(89, 77, 252, 0.6);
+    box-shadow: 0 0 15px rgba(243, 75, 197, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(89, 77, 252, 0.9);
+    box-shadow: 0 0 25px rgba(243, 75, 197, 0.9);
   }
 }
 
 @keyframes leftUtGlow {
   from {
-    box-shadow: 0 0 15px rgba(244, 90, 90, 0.6);
+    box-shadow: 0 0 15px rgba(33, 206, 242, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(244, 90, 90, 0.9);
+    box-shadow: 0 0 25px rgba(33, 206, 242, 0.9);
   }
 }
 
 @keyframes rightCaiGlow {
   from {
-    box-shadow: 0 0 15px rgba(39, 253, 79, 0.6);
+    box-shadow: 0 0 15px rgba(96, 106, 242, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(39, 253, 79, 0.9);
+    box-shadow: 0 0 25px rgba(96, 106, 242, 0.9);
   }
 }
 
 @keyframes rightApUtGlow {
   from {
-    box-shadow: 0 0 15px rgba(253, 157, 58, 0.6);
+    box-shadow: 0 0 15px rgba(41, 178, 135, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(253, 157, 58, 0.9);
+    box-shadow: 0 0 25px rgba(41, 178, 135, 0.9);
   }
 }
 
 @keyframes rightGiuaGlow {
   from {
-    box-shadow: 0 0 15px rgba(252, 188, 41, 0.6);
+    box-shadow: 0 0 15px rgba(243, 243, 62, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(252, 188, 41, 0.9);
+    box-shadow: 0 0 25px rgba(243, 243, 62, 0.9);
   }
 }
 
 @keyframes rightTroGlow {
   from {
-    box-shadow: 0 0 15px rgba(242, 253, 81, 0.6);
+    box-shadow: 0 0 15px rgba(243, 134, 38, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(242, 253, 81, 0.9);
+    box-shadow: 0 0 25px rgba(243, 134, 38, 0.9);
   }
 }
 
 @keyframes rightUtGlow {
   from {
-    box-shadow: 0 0 15px rgba(252, 51, 17, 0.6);
+    box-shadow: 0 0 15px rgba(234, 187, 242, 0.6);
   }
   to {
-    box-shadow: 0 0 25px rgba(252, 51, 17, 0.9);
+    box-shadow: 0 0 25px rgba(234, 187, 242, 0.9);
   }
 }
 

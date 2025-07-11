@@ -51,7 +51,12 @@ router.post("/", adminAuth, async (req, res) => {
     }
 
     if (
-      ["letterTyper", "wordTyper", "paragraphTyper"].indexOf(gameType) === -1
+      [
+        "letterTyper",
+        "wordTyper",
+        "paragraphTyper",
+        "vietnameseLetterTyper",
+      ].indexOf(gameType) === -1
     ) {
       return res.status(400).json({ message: "Invalid gameType" });
     }
