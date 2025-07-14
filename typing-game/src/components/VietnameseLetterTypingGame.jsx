@@ -246,18 +246,6 @@ function VietnameseLetterTypingGame({ lesson, onComplete }) {
         ))}
       </div>
 
-      {/* Input Box */}
-      <div className="input-section">
-        <input
-          type="text"
-          value={userInput}
-          readOnly
-          className="game-input"
-          placeholder="Gõ ở đây..."
-          style={{ imeMode: "disabled" }}
-        />
-      </div>
-
       {/* Keyboard and Hand Guides */}
       <div className="keyboard-hands-row">
         <HandGuide type="left" nextKey={nextKey} />

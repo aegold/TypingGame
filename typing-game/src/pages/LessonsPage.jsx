@@ -97,67 +97,74 @@ function LessonsPage() {
 
   return (
     <div className="lessons-page-bg">
-      <h1 className="lessons-title">Chọn bài học</h1>
+      <div className="lessons-page-container">
+        <h1 className="lessons-title">Chọn bài học</h1>
 
-      {/* Hiển thị uncategorized lessons trước */}
-      {uncategorized.length > 0 && (
-        <div className="category-section">
-          <h2 className="category-title">Chưa phân loại</h2>
-          <div className="lessons-list">
-            {uncategorized.map((lesson) => (
-              <div className="lesson-card" key={lesson._id}>
-                <div className="lesson-title">{lesson.title}</div>
-                <div className="lesson-info-box">
-                  <span>Loại game: {getGameTypeLabel(lesson.gameType)}</span>
-                  <p>Thời gian: {lesson.timer}s</p>
-                </div>
-                <button
-                  className="lesson-play-btn"
-                  onClick={() => navigate(`/lessons/${lesson._id}`)}
-                >
-                  Chơi
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Hiển thị lessons theo category */}
-      {categories
-        .sort((a, b) => (a.order || 0) - (b.order || 0))
-        .map((category) => {
-          const categoryLessons = grouped[category._id] || [];
-          if (categoryLessons.length === 0) return null;
-
-          return (
-            <div key={category._id} className="category-section">
-              <h2 className="category-title">{category.name}</h2>
-              {category.description && (
-                <p className="category-description">{category.description}</p>
-              )}
-              <div className="lessons-list">
-                {categoryLessons.map((lesson) => (
-                  <div className="lesson-card" key={lesson._id}>
-                    <div className="lesson-title">{lesson.title}</div>
-                    <div className="lesson-info-box">
-                      <span>
-                        Loại game: {getGameTypeLabel(lesson.gameType)}
-                      </span>
-                      <p>Thời gian: {lesson.timer}s</p>
-                    </div>
-                    <button
-                      className="lesson-play-btn"
-                      onClick={() => navigate(`/lessons/${lesson._id}`)}
-                    >
-                      Chơi
-                    </button>
+        {/* Hiển thị uncategorized lessons trước */}
+        {uncategorized.length > 0 && (
+          <div className="category-section">
+            <h2 className="category-title">Chưa phân loại</h2>
+            <div className="lessons-list">
+              {uncategorized.map((lesson) => (
+                <div className="lesson-card" key={lesson._id}>
+                  <div className="lesson-title">{lesson.title}</div>
+                  <div className="lesson-info-box">
+                    <span>Loại game: {getGameTypeLabel(lesson.gameType)}</span>
+                    <p>Thời gian: {lesson.timer}s</p>
                   </div>
-                ))}
-              </div>
+                  <button
+                    className="lesson-play-btn"
+                    onClick={() => navigate(`/lessons/${lesson._id}`)}
+                  >
+                    Chơi
+                  </button>
+                </div>
+              ))}
             </div>
-          );
-        })}
+          </div>
+        )}
+
+        {/* Hiển thị lessons theo category - luôn hiển thị tất cả categories */}
+        {categories
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((category) => {
+            const categoryLessons = grouped[category._id] || [];
+
+            return (
+              <div key={category._id} className="category-section">
+                <h2 className="category-title">{category.name}</h2>
+                {category.description && (
+                  <p className="category-description">{category.description}</p>
+                )}
+                <div className="lessons-list">
+                  {categoryLessons.length === 0 ? (
+                    <div className="no-lessons-message">
+                      Chưa có bài học nào trong danh mục này.
+                    </div>
+                  ) : (
+                    categoryLessons.map((lesson) => (
+                      <div className="lesson-card" key={lesson._id}>
+                        <div className="lesson-title">{lesson.title}</div>
+                        <div className="lesson-info-box">
+                          <span>
+                            Loại game: {getGameTypeLabel(lesson.gameType)}
+                          </span>
+                          <p>Thời gian: {lesson.timer}s</p>
+                        </div>
+                        <button
+                          className="lesson-play-btn"
+                          onClick={() => navigate(`/lessons/${lesson._id}`)}
+                        >
+                          Chơi
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })}
+      </div>
     </div>
   );
 }
