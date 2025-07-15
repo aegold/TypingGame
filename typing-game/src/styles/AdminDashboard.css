@@ -1,8 +1,8 @@
 .admin-dashboard {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px 20px 0 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .admin-header {
@@ -141,7 +141,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 15px;
 }
 .lesson-filter label {
   font-weight: 500;
@@ -149,7 +149,10 @@
 
 .form-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: #0005;
   z-index: 1000;
   display: flex;
@@ -185,7 +188,8 @@
   margin-bottom: 10px;
 }
 
-.category-card .btn-edit, .category-card .btn-delete {
+.category-card .btn-edit,
+.category-card .btn-delete {
   font-size: 0.97em;
   padding: 4px 12px;
 }
@@ -215,7 +219,7 @@
 .form-group textarea {
   resize: vertical;
   min-height: 120px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 13px;
 }
 
@@ -249,103 +253,110 @@
   margin-top: 20px;
 }
 
-/* Lessons List */
-.lessons-list h2 {
+/* Admin Lessons List - Specific to AdminDashboard */
+.admin-lessons-list {
+  padding: 0;
+  margin: 0;
+}
+
+.admin-lessons-list h2 {
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-.lessons-grid {
+.admin-lessons-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 15px;
+  margin-top: 0;
 }
 
-.lesson-card {
+.admin-lesson-card {
   background-color: white;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 50px;
+  min-height: auto;
   display: flex;
   flex-direction: column;
 }
 
-.lesson-card:hover {
+.admin-lesson-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.lesson-header {
+.admin-lesson-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
-.lesson-header h3 {
+.admin-lesson-header h3 {
   margin: 0;
   color: #333;
-  font-size: 1.1rem;
+  font-size: 1rem;
   flex: 1;
-  line-height: 1.3;
+  line-height: 1.2;
+  font-weight: 600;
 }
 
-.lesson-type {
+.admin-lesson-type {
   background-color: #e3f2fd;
   color: #1976d2;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
   font-weight: 600;
   white-space: nowrap;
-  margin-left: 10px;
+  margin-left: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
-.lesson-details {
-  margin-bottom: 4px;
+.admin-lesson-details {
+  margin-bottom: 8px;
   flex: 1;
   padding: 0;
 }
 
-.lesson-details p {
-  margin: 4px 0;
+.admin-lesson-details p {
+  margin: 2px 0;
   color: #666;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.3;
 }
 
-.lesson-details a {
+.admin-lesson-details a {
   color: #007bff;
   text-decoration: none;
 }
 
-.lesson-details a:hover {
+.admin-lesson-details a:hover {
   text-decoration: underline;
 }
 
-.lesson-actions {
+.admin-lesson-actions {
   display: flex;
-  gap: 8px;
-  margin-top: auto;
+  gap: 6px;
+  margin-top: 8px;
 }
 
-.lesson-actions .btn {
+.admin-lesson-actions .btn {
   flex: 1;
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 4px 8px;
+  font-size: 11px;
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .lessons-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .admin-lessons-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
 }
 
@@ -353,40 +364,46 @@
   .admin-dashboard {
     padding: 15px;
   }
-  
+
   .admin-header {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
-  
+
   .admin-header h1 {
     font-size: 1.5rem;
     text-align: center;
   }
-  
+
   .form-container {
     margin: 20px;
     padding: 20px;
     max-width: 95%;
   }
-  
-  .lessons-grid {
-    grid-template-columns: repeat(2, 1fr);
+
+  .admin-lessons-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
-  
-  .lesson-header {
+
+  .admin-lesson-header {
     flex-direction: column;
     gap: 10px;
   }
-  
-  .lesson-type {
+
+  .admin-lesson-type {
     align-self: flex-start;
     margin-left: 0;
   }
-  
-  .lesson-actions {
+
+  .admin-lesson-actions {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-lessons-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -394,16 +411,12 @@
   .admin-dashboard {
     padding: 10px;
   }
-  
+
   .form-container {
     margin: 10px;
     padding: 15px;
   }
-  
-  .lessons-grid {
-    grid-template-columns: 1fr;
-  }
-  
+
   .form-actions {
     flex-direction: column;
   }

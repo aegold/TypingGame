@@ -5,25 +5,48 @@ import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
 import HandGuide from "./HandGuide";
 
+/**
+ * ParagraphTypingGame Component
+ *
+ * Component cho game gõ đoạn văn bản (Paragraph Typing Game)
+ *
+ * Features:
+ * - Hiển thị đoạn văn bản để user gõ theo
+ * - Real-time character highlighting
+ * - Tính WPM (Words Per Minute) và accuracy
+ * - Auto-scroll theo vị trí đang gõ
+ * - Virtual keyboard highlighting
+ * - Hand guide positioning
+ * - Timer countdown
+ * - Âm thanh gõ phím
+ *
+ * Props:
+ * @param {Function} onFinish - Callback khi game kết thúc
+ * @param {boolean} noTopMargin - Loại bỏ margin top
+ * @param {number} timer - Thời gian chơi (giây), default 60s
+ * @param {Array} words - Danh sách văn bản để chơi
+ */
 function ParagraphTypingGame({
   onFinish,
   noTopMargin,
   timer = 60,
   words = [],
 }) {
-  const [text, setText] = useState("");
-  const [userInput, setUserInput] = useState("");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(timer);
-  const [isGameActive, setIsGameActive] = useState(false);
-  const [correctChars, setCorrectChars] = useState(0);
-  const [incorrectChars, setIncorrectChars] = useState(0);
-  const inputRef = useRef(null);
-  const containerRef = useRef(null);
+  // === STATE MANAGEMENT ===
+  const [text, setText] = useState(""); // Văn bản cần gõ
+  const [userInput, setUserInput] = useState(""); // Input của user
+  const [currentIndex, setCurrentIndex] = useState(0); // Vị trí ký tự hiện tại
+  const [timeLeft, setTimeLeft] = useState(timer); // Thời gian còn lại
+  const [isGameActive, setIsGameActive] = useState(false); // Game đang active
+  const [correctChars, setCorrectChars] = useState(0); // Số ký tự đúng
+  const [incorrectChars, setIncorrectChars] = useState(0); // Số ký tự sai
+  const inputRef = useRef(null); // Ref cho input field
+  const containerRef = useRef(null); // Ref cho text container
 
-  // Sound effect hook
-  const { playSound } = useTypingSound();
+  // === HOOKS ===
+  const { playSound } = useTypingSound(); // Hook xử lý âm thanh
 
+  // === REFS FOR CALLBACK STABILITY ===
   // Ref để lưu callback và stats mới nhất, tránh closure issues
   const onFinishRef = useRef(onFinish);
   const statsRef = useRef({ correctChars: 0, incorrectChars: 0 });
@@ -34,11 +57,13 @@ function ParagraphTypingGame({
     statsRef.current = { correctChars, incorrectChars };
   }, [onFinish, correctChars, incorrectChars]);
 
-  // Auto-scroll đến vị trí đang gõ - tối ưu hóa
+  // === AUTO SCROLL LOGIC ===
+  /**
+   * Auto-scroll đến vị trí đang gõ - tối ưu hóa performance
+   */
   useEffect(() => {
     if (currentIndex > 0 && isGameActive && text.length > 100) {
-      // Chỉ scroll khi text dài
-      // Delay nhỏ để tránh conflict với input events
+      // Chỉ scroll khi text dài và game đang active
       const scrollTimeout = setTimeout(() => {
         const currentChar = document.querySelector(".char-current");
         if (currentChar && containerRef.current) {
@@ -46,7 +71,7 @@ function ParagraphTypingGame({
           const containerRect = containerRef.current.getBoundingClientRect();
 
           // Chỉ scroll khi ký tự hiện tại thực sự nằm ngoài viewport
-          const buffer = 100; // Tăng buffer để tránh scroll quá nhiều
+          const buffer = 100; // Buffer để tránh scroll quá nhiều
           if (
             rect.top < containerRect.top + buffer ||
             rect.bottom > containerRect.bottom - buffer

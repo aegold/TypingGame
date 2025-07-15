@@ -3,29 +3,38 @@ import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import "../styles/AdminDashboard.css";
 
+/**
+ * AdminDashboard Component
+ * Trang quản trị cho admin để quản lý lessons và categories
+ * Chỉ có thể truy cập bởi users có quyền admin
+ */
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [lessons, setLessons] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingLesson, setEditingLesson] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Thêm state cho category management
-  const [activeTab, setActiveTab] = useState("lessons");
-  const [categories, setCategories] = useState([]);
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
+  // === LESSON MANAGEMENT STATE ===
+  const [lessons, setLessons] = useState([]); // Danh sách tất cả bài học
+  const [loading, setLoading] = useState(true); // Trạng thái loading khi fetch data
+  const [error, setError] = useState(""); // Thông báo lỗi
+  const [showCreateForm, setShowCreateForm] = useState(false); // Hiển thị form tạo/sửa lesson
+  const [editingLesson, setEditingLesson] = useState(null); // Lesson đang được edit (null = create mode)
+
+  // === AUTHENTICATION STATE ===
+  const [isAdmin, setIsAdmin] = useState(false); // Kiểm tra user có phải admin
+  const [checkingAuth, setCheckingAuth] = useState(true); // Đang kiểm tra quyền admin
+
+  // === CATEGORY MANAGEMENT STATE ===
+  const [activeTab, setActiveTab] = useState("lessons"); // Tab đang active (lessons/categories)
+  const [categories, setCategories] = useState([]); // Danh sách tất cả categories
+  const [showCategoryForm, setShowCategoryForm] = useState(false); // Hiển thị form tạo/sửa category
+  const [editingCategory, setEditingCategory] = useState(null); // Category đang được edit
   const [categoryForm, setCategoryForm] = useState({
     name: "",
     description: "",
     order: 0,
     color: "#888888",
-  });
+  }); // Form data cho category
 
-  // Form state
+  // === LESSON FORM STATE ===
   const [formData, setFormData] = useState({
     title: "",
     videoUrl: "",
@@ -34,9 +43,14 @@ const AdminDashboard = () => {
     timer: 30,
     category: "",
     order: 0,
-  });
+  }); // Form data cho lesson
 
-  // Kiểm tra quyền admin khi component mount
+  // === AUTHENTICATION EFFECTS ===
+  /**
+   * Kiểm tra quyền admin khi component mount
+   * Redirect về login nếu không có token
+   * Redirect về lessons nếu không phải admin
+   */
   useEffect(() => {
     const checkAdminAuth = async () => {
       try {
@@ -60,7 +74,10 @@ const AdminDashboard = () => {
     checkAdminAuth();
   }, [navigate]);
 
-  // Chỉ load data khi đã xác nhận là admin
+  /**
+   * Load data khi đã xác nhận là admin
+   * Fetch categories và lessons sau khi authentication thành công
+   */
   useEffect(() => {
     if (isAdmin) {
       fetchCategories();
@@ -68,7 +85,10 @@ const AdminDashboard = () => {
     }
   }, [isAdmin]);
 
-  // Thêm hàm fetchCategories
+  // === CATEGORY MANAGEMENT FUNCTIONS ===
+  /**
+   * Fetch danh sách categories từ API
+   */
   const fetchCategories = async () => {
     try {
       const response = await axios.get("/api/categories");
@@ -79,7 +99,9 @@ const AdminDashboard = () => {
     }
   };
 
-  // Thêm hàm xử lý category
+  /**
+   * Xử lý thay đổi input trong category form
+   */
   const handleCategoryInput = (e) => {
     const { name, value } = e.target;
     setCategoryForm((prev) => ({
@@ -88,14 +110,20 @@ const AdminDashboard = () => {
     }));
   };
 
+  /**
+   * Submit category form (tạo mới hoặc cập nhật)
+   */
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingCategory) {
+        // Update existing category
         await axios.put(`/api/categories/${editingCategory._id}`, categoryForm);
       } else {
+        // Create new category
         await axios.post("/api/categories", categoryForm);
       }
+      // Reset form và refresh data
       setShowCategoryForm(false);
       setEditingCategory(null);
       setCategoryForm({
@@ -111,6 +139,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Bắt đầu edit category - populate form với data hiện tại
+   */
   const handleEditCategory = (category) => {
     setEditingCategory(category);
     setCategoryForm({
@@ -122,6 +153,10 @@ const AdminDashboard = () => {
     setShowCategoryForm(true);
   };
 
+  /**
+   * Xóa category với confirmation
+   * Backend sẽ kiểm tra nếu còn lesson liên quan
+   */
   const handleDeleteCategory = async (category) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa category này?")) {
       try {
@@ -134,6 +169,10 @@ const AdminDashboard = () => {
     }
   };
 
+  // === LESSON MANAGEMENT FUNCTIONS ===
+  /**
+   * Fetch danh sách lessons từ API
+   */
   const fetchLessons = async () => {
     try {
       setLoading(true);
@@ -147,6 +186,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Xử lý thay đổi input trong lesson form
+   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -155,11 +197,16 @@ const AdminDashboard = () => {
     }));
   };
 
+  /**
+   * Parse words string thành format phù hợp với từng game type
+   * Hỗ trợ cả JSON array và text lines
+   */
   const parseWords = (wordsString) => {
     try {
+      // Thử parse JSON trước
       let parsed = JSON.parse(wordsString);
       if (formData.gameType === "letterTyper") {
-        // Nếu là mảng 1 chiều, bọc lại thành mảng 2 chiều
+        // Nếu là mảng 1 chiều, bọc lại thành mảng 2 chiều cho sequences
         if (Array.isArray(parsed) && typeof parsed[0] === "string") {
           parsed = [parsed];
         }
@@ -174,7 +221,7 @@ const AdminDashboard = () => {
       // Nếu không phải JSON, chia theo dòng
       let arr = wordsString.split("\n").filter((word) => word.trim());
       if (formData.gameType === "letterTyper") {
-        arr = [arr];
+        arr = [arr]; // Wrap in array for sequences
       } else if (formData.gameType === "vietnameseLetterTyper") {
         // For Vietnamese, each line should be a single character
         return arr;
@@ -183,6 +230,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Submit lesson form (tạo mới hoặc cập nhật)
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -193,11 +243,14 @@ const AdminDashboard = () => {
       };
 
       if (editingLesson) {
+        // Update existing lesson
         await axios.put(`/api/lessons/${editingLesson._id}`, lessonData);
       } else {
+        // Create new lesson
         await axios.post("/api/lessons", lessonData);
       }
 
+      // Reset form và refresh data
       setShowCreateForm(false);
       setEditingLesson(null);
       resetForm();
@@ -208,6 +261,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Bắt đầu edit lesson - populate form với data hiện tại
+   */
   const handleEdit = (lesson) => {
     setEditingLesson(lesson);
     setFormData({
@@ -224,6 +280,9 @@ const AdminDashboard = () => {
     setShowCreateForm(true);
   };
 
+  /**
+   * Xóa lesson với confirmation
+   */
   const handleDelete = async (lessonId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa bài học này?")) {
       try {
@@ -236,6 +295,9 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Reset lesson form về trạng thái ban đầu
+   */
   const resetForm = () => {
     setFormData({
       title: "",
@@ -248,12 +310,19 @@ const AdminDashboard = () => {
     });
   };
 
+  /**
+   * Hủy edit mode và reset form
+   */
   const cancelEdit = () => {
     setShowCreateForm(false);
     setEditingLesson(null);
     resetForm();
   };
 
+  // === UTILITY FUNCTIONS ===
+  /**
+   * Chuyển đổi gameType thành label hiển thị
+   */
   const getGameTypeLabel = (gameType) => {
     const labels = {
       letterTyper: "Gõ chữ cái",
@@ -264,6 +333,9 @@ const AdminDashboard = () => {
     return labels[gameType] || gameType;
   };
 
+  /**
+   * Lấy placeholder text cho textarea words dựa vào gameType
+   */
   const getContentPlaceholder = (gameType) => {
     const placeholders = {
       letterTyper:
@@ -278,6 +350,9 @@ const AdminDashboard = () => {
     return placeholders[gameType] || "";
   };
 
+  /**
+   * Lấy label cho trường words dựa vào gameType
+   */
   const getContentLabel = (gameType) => {
     const labels = {
       letterTyper: "Chữ cái cần gõ:",
@@ -288,22 +363,28 @@ const AdminDashboard = () => {
     return labels[gameType] || "Nội dung:";
   };
 
+  // === RENDER CONDITIONS ===
+  // Hiển thị loading khi đang kiểm tra authentication
   if (checkingAuth) {
     return (
       <div className="admin-dashboard">Đang kiểm tra quyền truy cập...</div>
     );
   }
 
+  // Hiển thị thông báo nếu không có quyền admin
   if (!isAdmin) {
     return <div className="admin-dashboard">Không có quyền truy cập.</div>;
   }
 
+  // Hiển thị loading khi đang fetch data
   if (loading) {
     return <div className="admin-dashboard">Đang tải...</div>;
   }
 
+  // === MAIN RENDER ===
   return (
     <div className="admin-dashboard">
+      {/* Header với navigation tabs */}
       <div className="admin-header">
         <h1>Quản trị</h1>
         <div className="tab-nav">
@@ -322,11 +403,13 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Hiển thị error message nếu có */}
       {error && <div className="error-message">{error}</div>}
 
-      {/* Tab Categories */}
+      {/* === TAB CATEGORIES === */}
       {activeTab === "categories" && (
         <div className="categories-tab">
+          {/* Button tạo category mới */}
           <button
             className="btn btn-primary"
             onClick={() => {
@@ -343,6 +426,7 @@ const AdminDashboard = () => {
             Tạo category mới
           </button>
 
+          {/* Form tạo/sửa category */}
           {showCategoryForm && (
             <div className="form-overlay">
               <div className="form-container">
@@ -399,6 +483,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Grid hiển thị danh sách categories */}
           <div className="categories-grid">
             {categories.length === 0 ? (
               <p>Chưa có category nào.</p>
@@ -431,9 +516,10 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Tab Lessons */}
+      {/* === TAB LESSONS === */}
       {activeTab === "lessons" && (
         <>
+          {/* Button tạo lesson mới */}
           <div className="lesson-filter">
             <button
               className="btn btn-primary"
@@ -443,7 +529,7 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          {/* Form create lesson */}
+          {/* Form tạo/sửa lesson */}
           {showCreateForm && (
             <div className="form-overlay">
               <div className="form-container">
@@ -451,6 +537,7 @@ const AdminDashboard = () => {
                   {editingLesson ? "Chỉnh sửa bài học" : "Tạo bài học mới"}
                 </h2>
                 <form onSubmit={handleSubmit}>
+                  {/* Tiêu đề lesson */}
                   <div className="form-group">
                     <label>Tiêu đề:</label>
                     <input
@@ -462,6 +549,7 @@ const AdminDashboard = () => {
                     />
                   </div>
 
+                  {/* URL video hướng dẫn (optional) */}
                   <div className="form-group">
                     <label>URL Video (tùy chọn):</label>
                     <input
@@ -472,6 +560,7 @@ const AdminDashboard = () => {
                     />
                   </div>
 
+                  {/* Loại game */}
                   <div className="form-group">
                     <label>Loại game:</label>
                     <select
@@ -488,6 +577,7 @@ const AdminDashboard = () => {
                     </select>
                   </div>
 
+                  {/* Thời gian game */}
                   <div className="form-group">
                     <label>Thời gian (giây):</label>
                     <input
@@ -501,6 +591,7 @@ const AdminDashboard = () => {
                     />
                   </div>
 
+                  {/* Category selection */}
                   <div className="form-group">
                     <label>Category:</label>
                     <select
@@ -518,6 +609,7 @@ const AdminDashboard = () => {
                     </select>
                   </div>
 
+                  {/* Thứ tự lesson trong category */}
                   <div className="form-group">
                     <label>Thứ tự (order):</label>
                     <input
@@ -529,6 +621,7 @@ const AdminDashboard = () => {
                     />
                   </div>
 
+                  {/* Nội dung words - thay đổi theo gameType */}
                   <div className="form-group">
                     <label>{getContentLabel(formData.gameType)}</label>
                     <textarea
@@ -539,6 +632,7 @@ const AdminDashboard = () => {
                       placeholder={getContentPlaceholder(formData.gameType)}
                       required
                     />
+                    {/* Help text cho từng loại game */}
                     <div className="form-help">
                       {formData.gameType === "letterTyper" && (
                         <p>
@@ -568,6 +662,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
+                  {/* Form actions */}
                   <div className="form-actions">
                     <button type="submit" className="btn btn-primary">
                       {editingLesson ? "Cập nhật" : "Tạo"}
@@ -585,15 +680,15 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* List lessons */}
-          <div className="lessons-list">
+          {/* Grid hiển thị danh sách lessons */}
+          <div className="admin-lessons-list">
             {lessons.length === 0 ? (
               <p>Chưa có bài học nào.</p>
             ) : (
-              <div className="lessons-grid">
+              <div className="admin-lessons-grid">
                 {lessons
                   .sort((a, b) => {
-                    // Sort theo category order, lesson order
+                    // Sort theo category order, rồi lesson order
                     const catA = categories.find(
                       (c) => c._id === a.category
                     ) || { order: 9999 };
@@ -605,14 +700,17 @@ const AdminDashboard = () => {
                     return (a.order || 0) - (b.order || 0);
                   })
                   .map((lesson) => (
-                    <div key={lesson._id} className="lesson-card">
-                      <div className="lesson-header">
+                    <div key={lesson._id} className="admin-lesson-card">
+                      {/* Header với title và game type */}
+                      <div className="admin-lesson-header">
                         <h3>{lesson.title}</h3>
-                        <div className="lesson-type">
+                        <div className="admin-lesson-type">
                           {getGameTypeLabel(lesson.gameType)}
                         </div>
                       </div>
-                      <div className="lesson-details">
+
+                      {/* Chi tiết lesson */}
+                      <div className="admin-lesson-details">
                         <p>
                           <strong>Thời gian:</strong> {lesson.timer}s
                         </p>
@@ -640,7 +738,9 @@ const AdminDashboard = () => {
                           </p>
                         )}
                       </div>
-                      <div className="lesson-actions">
+
+                      {/* Actions cho lesson */}
+                      <div className="admin-lesson-actions">
                         <button
                           className="btn btn-edit"
                           onClick={() => handleEdit(lesson)}

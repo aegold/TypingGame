@@ -4,40 +4,54 @@ import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
 import HandGuide from "./HandGuide";
 
+/**
+ * LetterTypingGame Component
+ * Game để luyện gõ từng chữ cái theo sequences
+ * Hiển thị bàn phím ảo và hướng dẫn ngón tay
+ */
 function LetterTypingGame({
-  onFinish,
-  sequences = [["f", " ", "f", " ", "f"]], // Mảng các sequences
-  autoNextLevel = true, // Tự động chuyển level
+  onFinish, // Callback khi hoàn thành game
+  sequences = [["f", " ", "f", " ", "f"]], // Mảng các sequences để luyện
+  autoNextLevel = true, // Tự động chuyển sequence tiếp theo
 }) {
-  const [currentSequenceIndex, setCurrentSequenceIndex] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isGameActive, setIsGameActive] = useState(true);
-  const [userProgress, setUserProgress] = useState([]); // Lưu trạng thái từng ký tự
-  const [isCompleted, setIsCompleted] = useState(false);
-  const inputRef = useRef(null);
-  // State để theo dõi số lỗi và thời gian
-  const [totalErrors, setTotalErrors] = useState(0);
-  const [startTime, setStartTime] = useState(null);
+  // === GAME STATE ===
+  const [currentSequenceIndex, setCurrentSequenceIndex] = useState(0); // Index của sequence hiện tại
+  const [currentIndex, setCurrentIndex] = useState(0); // Index của ký tự hiện tại trong sequence
+  const [isGameActive, setIsGameActive] = useState(true); // Trạng thái game đang active
+  const [userProgress, setUserProgress] = useState([]); // Lưu trạng thái từng ký tự đã gõ
+  const [isCompleted, setIsCompleted] = useState(false); // Đã hoàn thành sequence hiện tại
+  const inputRef = useRef(null); // Reference đến input ẩn để capture keyboard events
 
-  // Khởi tạo startTime khi game bắt đầu
+  // === TRACKING STATE ===
+  const [totalErrors, setTotalErrors] = useState(0); // Tổng số lỗi trong toàn bộ game
+  const [startTime, setStartTime] = useState(null); // Thời gian bắt đầu game
+
+  // === EFFECTS ===
+  /**
+   * Khởi tạo startTime khi game bắt đầu
+   */
   useEffect(() => {
     if (isGameActive && !startTime) {
       setStartTime(Date.now());
     }
   }, [isGameActive, startTime]);
 
-  // Reset errors khi chuyển sequence
+  /**
+   * Reset errors khi chuyển sequence - Giữ totalErrors để tracking toàn bộ game
+   */
   useEffect(() => {
     // Không reset totalErrors khi chuyển sequence để giữ tổng số lỗi
   }, [currentSequenceIndex]);
 
-  // Lấy sequence hiện tại
-  const currentSequence = sequences[currentSequenceIndex] || sequences[0];
+  // === CURRENT DATA ===
+  const currentSequence = sequences[currentSequenceIndex] || sequences[0]; // Sequence đang chơi
 
-  // Sound effect hook
-  const { playSound } = useTypingSound();
+  // === HOOKS ===
+  const { playSound } = useTypingSound(); // Hook để phát âm thanh khi gõ
 
-  // Khởi tạo trạng thái ban đầu
+  /**
+   * Khởi tạo trạng thái ban đầu khi chuyển sequence
+   */
   useEffect(() => {
     setUserProgress(
       currentSequence.map(() => ({ status: "pending", input: "" }))
@@ -46,7 +60,7 @@ function LetterTypingGame({
     setIsCompleted(false);
     setIsGameActive(true);
 
-    // Focus vào input ẩn
+    // Focus vào input ẩn để capture keyboard events
     if (inputRef.current) {
       inputRef.current.focus();
     }

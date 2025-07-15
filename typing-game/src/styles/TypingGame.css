@@ -590,7 +590,7 @@
   width: 100%;
   max-width: 1100px;
 }
-.lesson-card {
+.game-lesson-card {
   background: #fff;
   border-radius: 16px;
   padding: 24px;
@@ -604,11 +604,11 @@
   justify-content: flex-start;
   position: relative;
 }
-.lesson-card:hover {
+.game-lesson-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(67, 198, 172, 0.2);
 }
-.lesson-title {
+.game-lesson-title {
   font-size: 1.3rem;
   font-weight: bold;
   color: #43c6ac;
@@ -616,7 +616,7 @@
   line-height: 1.4;
   flex-grow: 0;
 }
-.lesson-desc {
+.game-lesson-desc {
   color: #666;
   margin-bottom: 16px;
   line-height: 1.5;

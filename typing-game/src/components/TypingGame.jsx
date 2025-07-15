@@ -3,7 +3,35 @@ import "../styles/TypingGame.css";
 import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import useTypingSound from "../hooks/useTypingSound";
 
-// Hàm tính khoảng cách Levenshtein
+/**
+ * TypingGame Component
+ *
+ * Component chính cho game gõ từ (Word Typing Game)
+ *
+ * Features:
+ * - Hiển thị từ ngẫu nhiên để user gõ
+ * - Tính điểm dựa trên độ chính xác và tốc độ
+ * - Timer countdown
+ * - Spell checking với Levenshtein distance
+ * - Âm thanh gõ phím
+ * - Animation feedback
+ * - Keyboard highlighting
+ *
+ * Props:
+ * @param {Function} onFinish - Callback khi game kết thúc
+ * @param {boolean} noTopMargin - Loại bỏ margin top
+ * @param {number} timer - Thời gian chơi (giây)
+ * @param {Array} words - Danh sách từ để chơi
+ */
+
+// === UTILITY FUNCTIONS ===
+/**
+ * Tính khoảng cách Levenshtein giữa 2 chuỗi
+ * Dùng để đánh giá độ tương tự giữa từ gõ và từ gốc
+ * @param {string} a - Chuỗi 1
+ * @param {string} b - Chuỗi 2
+ * @returns {number} Khoảng cách Levenshtein
+ */
 function levenshtein(a, b) {
   const matrix = Array(a.length + 1)
     .fill(null)
@@ -24,28 +52,34 @@ function levenshtein(a, b) {
 }
 
 function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
-  const [word, setWord] = useState("");
-  const [inputValue, setInputValue] = useState("");
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(timer);
-  const [isGameActive, setIsGameActive] = useState(false);
-  const [correctResults, setCorrectResults] = useState([]);
-  const [wrongResults, setWrongResults] = useState([]);
-  const [animation, setAnimation] = useState(null);
-  const [spellWarning, setSpellWarning] = useState("");
-  const inputRef = useRef(null);
+  // === STATE MANAGEMENT ===
+  const [word, setWord] = useState(""); // Từ hiện tại cần gõ
+  const [inputValue, setInputValue] = useState(""); // Giá trị input
+  const [score, setScore] = useState(0); // Điểm số
+  const [timeLeft, setTimeLeft] = useState(timer); // Thời gian còn lại
+  const [isGameActive, setIsGameActive] = useState(false); // Game đang active
+  const [correctResults, setCorrectResults] = useState([]); // Từ gõ đúng
+  const [wrongResults, setWrongResults] = useState([]); // Từ gõ sai
+  const [animation, setAnimation] = useState(null); // Animation hiện tại
+  const [spellWarning, setSpellWarning] = useState(""); // Cảnh báo chính tả
+  const inputRef = useRef(null); // Ref cho input field
 
-  // Thêm sound hook
-  const { playSound } = useTypingSound();
+  // === HOOKS ===
+  const { playSound } = useTypingSound(); // Hook xử lý âm thanh
 
-  // Chọn một từ ngẫu nhiên từ danh sách words được truyền vào
+  // === GAME LOGIC ===
+  /**
+   * Chọn từ ngẫu nhiên từ danh sách
+   */
   const getRandomWord = () => {
     if (words.length === 0) return "hello"; // fallback nếu không có words
     const randomIndex = Math.floor(Math.random() * words.length);
     return words[randomIndex];
   };
 
-  // Khởi động game
+  /**
+   * Bắt đầu game
+   */
   const startGame = () => {
     setIsGameActive(true);
     setScore(0);
@@ -62,14 +96,18 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
     }, 0);
   };
 
-  // Kiểm tra từ đã nhập
+  /**
+   * Kiểm tra từ đã nhập
+   * So sánh với từ gốc và tính điểm
+   */
   const checkWord = () => {
     if (inputValue.trim().toLowerCase() === word.toLowerCase()) {
+      // Từ đúng hoàn toàn
       setScore((prevScore) => prevScore + 1);
       setCorrectResults((prevCorrect) => [...prevCorrect, word]);
       setSpellWarning("");
     } else {
-      // Kiểm tra gần đúng
+      // Kiểm tra gần đúng với Levenshtein distance
       const dist = levenshtein(
         inputValue.trim().toLowerCase(),
         word.toLowerCase()
@@ -81,28 +119,37 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
       }
       setWrongResults((prevWrong) => [...prevWrong, word]);
     }
+    // Chuyển sang từ tiếp theo
     setWord(getRandomWord());
     setInputValue("");
   };
 
-  // Xử lý khi người dùng nhấn phím Enter
+  /**
+   * Xử lý Enter key press
+   */
   const handleKeyPress = (e) => {
     if (e.charCode === 13 && inputValue.trim() !== "" && isGameActive) {
       checkWord();
     }
   };
 
-  // Xử lý thay đổi trong input
+  /**
+   * Xử lý thay đổi trong input
+   * Phát âm thanh khi user gõ
+   */
   const handleInputChange = (e) => {
     const newValue = e.target.value;
-    // Phát sound khi người dùng gõ
+    // Phát sound khi người dùng gõ thêm ký tự
     if (newValue.length > inputValue.length) {
       playSound();
     }
     setInputValue(newValue);
   };
 
-  // Xử lý actions từ KeyboardManager
+  /**
+   * Xử lý actions từ KeyboardManager (Virtual Keyboard)
+   * @param {Object} action - Action object với type và payload
+   */
   const handleKeyboardAction = (action) => {
     switch (action.type) {
       case ACTION_TYPES.ADD_CHAR:
@@ -123,13 +170,16 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
         console.warn("Unknown action type:", action.type);
     }
 
-    // Focus vào input
+    // Focus vào input sau khi thao tác
     if (inputRef.current) {
       inputRef.current.focus();
     }
   };
 
-  // Đếm ngược thời gian
+  // === EFFECTS ===
+  /**
+   * Timer countdown effect
+   */
   useEffect(() => {
     let timer;
     if (isGameActive && timeLeft > 0) {
@@ -137,6 +187,7 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
         setTimeLeft((prevTime) => prevTime - 1);
       }, 1000);
     } else if (timeLeft === 0 && isGameActive) {
+      // Game kết thúc
       setIsGameActive(false);
       if (onFinish) {
         onFinish({
@@ -146,24 +197,30 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
         });
       }
     }
+    // Animation cho countdown cuối
     if (timeLeft <= 10 && timeLeft > 0) {
       setAnimation("scaleNumber 2s infinite");
     }
     return () => clearTimeout(timer);
   }, [timeLeft, isGameActive, onFinish, score, correctResults, wrongResults]);
 
-  // Đặt focus vào input khi khởi động game
+  /**
+   * Auto focus input khi game active
+   */
   useEffect(() => {
     if (isGameActive) {
       inputRef.current.focus();
     }
   }, [isGameActive]);
 
-  // Khởi tạo từ đầu tiên
+  /**
+   * Khởi tạo từ đầu tiên khi component mount
+   */
   useEffect(() => {
     setWord(getRandomWord());
   }, []);
 
+  // === GAME STATE HELPERS ===
   const isStopped = !isGameActive && timeLeft > 0 && timeLeft < timer;
   const isNotStarted =
     !isGameActive &&
@@ -177,6 +234,7 @@ function TypingGame({ onFinish, noTopMargin, timer = 30, words = [] }) {
     inputValue,
   };
 
+  // === RENDER ===
   return (
     <div className="typing-game-new-layout">
       {/* Main container kéo dài toàn màn hình */}

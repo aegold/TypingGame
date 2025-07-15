@@ -3,18 +3,46 @@ import useKeyboardEvents from "../hooks/useKeyboardEvents";
 import { getFingerForKey } from "../constants/fingerMapping";
 import "../styles/VirtualKeyboard.css";
 
+/**
+ * VirtualKeyboard Component
+ *
+ * Component bàn phím ảo tương tác được
+ *
+ * Features:
+ * - Layout bàn phím 60% giống thật
+ * - Highlighting phím đang nhấn và phím tiếp theo
+ * - Color coding theo ngón tay
+ * - Hỗ trợ physical keyboard events
+ * - Visual feedback khi click
+ * - Special keys (Backspace, Enter, Shift, etc.)
+ *
+ * Props:
+ * @param {Function} onKeyPress - Callback khi nhấn phím
+ * @param {string} activeInput - Input hiện tại (để hiển thị)
+ * @param {boolean} isGameActive - Game có đang active không
+ * @param {boolean} enableKeyboardEvents - Có bật physical keyboard không
+ * @param {string} nextKey - Phím tiếp theo cần highlight
+ */
 function VirtualKeyboard({
   onKeyPress,
   activeInput,
   isGameActive,
   enableKeyboardEvents = true,
-  nextKey = null, // Thêm prop để highlight key tiếp theo
+  nextKey = null, // Phím tiếp theo cần highlight
 }) {
-  // Sử dụng custom hooks
+  // === HOOKS ===
   const { highlightKey, highlightVirtualKey } =
     useKeyboardHighlight(isGameActive);
 
-  // Layout bàn phím 60% giống thật
+  // === KEYBOARD LAYOUT DEFINITION ===
+  /**
+   * Layout bàn phím 60% theo chuẩn QWERTY
+   * Mỗi row chứa các key objects với properties:
+   * - key: Giá trị phím
+   * - display: Text hiển thị
+   * - width: Độ rộng CSS
+   * - isSpecial: Có phải special key không
+   */
   const keyboardLayout = [
     // Row 1: Numbers và symbols
     [
@@ -86,7 +114,7 @@ function VirtualKeyboard({
       { key: "ctrl", display: "Ctrl", width: "62px", isSpecial: true },
       { key: "win", display: "Win", width: "50px", isSpecial: true },
       { key: "alt", display: "Alt", width: "50px", isSpecial: true },
-      { key: "space", display: "", width: "250px", isSpecial: true },
+      { key: " ", display: "", width: "250px", isSpecial: true }, // Space key
       { key: "ralt", display: "Alt", width: "50px", isSpecial: true },
       { key: "fn", display: "Fn", width: "50px", isSpecial: true },
       { key: "menu", display: "≡", width: "50px", isSpecial: true },
@@ -94,15 +122,21 @@ function VirtualKeyboard({
     ],
   ];
 
-  // Hàm xử lý khi nhấn phím
+  // === EVENT HANDLERS ===
+  /**
+   * Xử lý khi click vào phím trên bàn phím ảo
+   * @param {string} key - Phím được click
+   */
   const handleKeyClick = (key) => {
     if (!isGameActive) return;
 
-    // Highlight key
+    // Visual feedback
     highlightVirtualKey(key);
 
+    // === KEY PROCESSING ===
     // Xử lý các phím đặc biệt
-    if (key === "space") {
+    if (key === " ") {
+      // Space key
       onKeyPress(" ");
     } else if (key === "backspace") {
       onKeyPress("backspace");

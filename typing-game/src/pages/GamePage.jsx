@@ -6,20 +6,40 @@ import ParagraphTypingGame from "../components/ParagraphTypingGame";
 import LetterTypingGame from "../components/LetterTypingGame";
 import VietnameseLetterTypingGame from "../components/VietnameseLetterTypingGame";
 
+/**
+ * GamePage Component
+ * Trang chính để chơi các game typing
+ * Route: /game/:id - với id là lesson ID
+ *
+ * Tự động chọn component game phù hợp dựa vào gameType của lesson:
+ * - letterTyper: LetterTypingGame
+ * - wordTyper: TypingGame
+ * - paragraphTyper: ParagraphTypingGame
+ * - vietnameseLetterTyper: VietnameseLetterTypingGame
+ */
 function GamePage() {
-  const [result, setResult] = useState(null);
-  const [lesson, setLesson] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { id } = useParams();
+  // === STATE MANAGEMENT ===
+  const [result, setResult] = useState(null); // Kết quả sau khi hoàn thành game
+  const [lesson, setLesson] = useState(null); // Thông tin lesson hiện tại
+  const [loading, setLoading] = useState(true); // Trạng thái loading
+  const [error, setError] = useState(null); // Thông báo lỗi
+
+  // === ROUTING ===
+  const { id } = useParams(); // Lesson ID từ URL params
   const navigate = useNavigate();
 
-  // Hàm quay về trang lessons
+  // === NAVIGATION FUNCTIONS ===
+  /**
+   * Quay về trang danh sách lessons
+   */
   const handleBackToLessons = () => {
     navigate("/lessons");
   };
 
-  // Lấy thông tin lesson từ API
+  // === DATA FETCHING ===
+  /**
+   * Fetch thông tin lesson từ API khi component mount
+   */
   useEffect(() => {
     const fetchLesson = async () => {
       try {
@@ -40,9 +60,15 @@ function GamePage() {
     }
   }, [id]);
 
+  // === GAME EVENT HANDLERS ===
+  /**
+   * Xử lý khi game kết thúc - lưu điểm và hiển thị kết quả
+   */
   const handleGameFinish = (data) => {
     setResult(data);
     const token = localStorage.getItem("token");
+
+    // Gửi điểm lên server nếu user đã đăng nhập
     axios
       .post(
         "/score",
@@ -58,12 +84,25 @@ function GamePage() {
       .catch(() => alert("Lỗi khi lưu điểm"));
   };
 
+  /**
+   * Reset game để chơi lại
+   */
   const handleRestart = () => setResult(null);
+
+  /**
+   * Về trang dashboard/lessons
+   */
   const handleDashboard = () => navigate("/lessons");
 
-  // Render component game dựa vào gameType
+  // === GAME COMPONENT RENDERER ===
+  /**
+   * Render component game phù hợp dựa vào gameType của lesson
+   * Mỗi gameType có component và logic riêng
+   */
   const renderGameComponent = () => {
     if (!lesson) return null;
+
+    // Kiểm tra data words hợp lệ
     if (!Array.isArray(lesson.words) || lesson.words.length === 0) {
       return (
         <div style={{ color: "red", textAlign: "center", marginTop: 32 }}>
@@ -71,16 +110,21 @@ function GamePage() {
         </div>
       );
     }
+
+    // Chọn component dựa vào gameType
     switch (lesson.gameType) {
       case "letterTyper":
+        // Game gõ chữ cái - sequences of letters
         return (
           <LetterTypingGame
             onFinish={handleGameFinish}
-            sequences={lesson.words} // words array sẽ chứa array of sequences
+            sequences={lesson.words} // words array chứa array of sequences
             autoNextLevel={true}
           />
         );
+
       case "wordTyper":
+        // Game gõ từ - array of words
         return (
           <TypingGame
             onFinish={handleGameFinish}
@@ -89,7 +133,9 @@ function GamePage() {
             words={lesson.words}
           />
         );
+
       case "paragraphTyper":
+        // Game gõ đoạn văn - string hoặc array of strings
         return (
           <ParagraphTypingGame
             onFinish={handleGameFinish}
@@ -98,18 +144,26 @@ function GamePage() {
             words={lesson.words}
           />
         );
+
       case "vietnameseLetterTyper":
+        // Game học Telex tiếng Việt - array of Vietnamese characters
         return (
           <VietnameseLetterTypingGame
             lesson={lesson}
-            onComplete={(data) => handleGameFinish(data)}
+            onComplete={handleGameFinish}
           />
         );
+
       default:
-        return <div>Game type không được hỗ trợ</div>;
+        return (
+          <div style={{ color: "red", textAlign: "center", marginTop: 32 }}>
+            Loại game không được hỗ trợ: {lesson.gameType}
+          </div>
+        );
     }
   };
 
+  // === RENDER CONDITIONS ===
   if (loading) {
     return (
       <div className="gamepage-center">

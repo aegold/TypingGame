@@ -1,19 +1,42 @@
 import { useState, useEffect } from "react";
 
-// Custom hook để quản lý highlight logic cho bàn phím ảo
+/**
+ * useKeyboardHighlight Hook
+ *
+ * Custom hook để quản lý highlight logic cho bàn phím ảo
+ *
+ * Features:
+ * - Highlight phím khi nhấn physical keyboard
+ * - Highlight phím khi click virtual keyboard
+ * - Mapping phím từ physical sang virtual keyboard format
+ * - Auto clear highlight sau thời gian nhất định
+ * - Chỉ hoạt động khi game active
+ *
+ * @param {boolean} isGameActive - Game có đang active không
+ * @returns {Object} { highlightKey, highlightVirtualKey }
+ */
 const useKeyboardHighlight = (isGameActive) => {
-  const [highlightKey, setHighlightKey] = useState("");
+  // === STATE ===
+  const [highlightKey, setHighlightKey] = useState(""); // Phím đang được highlight
 
-  // Xử lý highlight khi nhấn phím vật lý
+  // === PHYSICAL KEYBOARD HIGHLIGHT ===
+  /**
+   * Effect để lắng nghe physical keyboard và highlight tương ứng
+   */
   useEffect(() => {
     if (!isGameActive) return;
 
+    /**
+     * Xử lý khi nhấn phím vật lý
+     * @param {KeyboardEvent} e - Keyboard event
+     */
     const handleDown = (e) => {
       let key = e.key.toLowerCase();
 
+      // === KEY MAPPING ===
       // Xử lý mapping cho các phím đặc biệt - đồng bộ với VirtualKeyboard
       const keyMap = {
-        " ": "space",
+        " ": " ", // Space key (giữ nguyên space, không map thành "space")
         shift: "shift",
         shiftleft: "shift",
         shiftright: "rshift",
@@ -37,12 +60,13 @@ const useKeyboardHighlight = (isGameActive) => {
         key = keyMap[key];
       }
 
+      // === VALID KEYS CHECK ===
       // Danh sách tất cả các phím hợp lệ trong bàn phím 60%
       const validKeys = [
         // Phím chức năng
         "backspace",
         "enter",
-        "space",
+        " ", // Space key
         "shift",
         "rshift",
         "tab",
@@ -54,7 +78,7 @@ const useKeyboardHighlight = (isGameActive) => {
         "win",
         "fn",
         "menu",
-        // Chữ cái
+        // Chữ cái a-z
         "a",
         "b",
         "c",
@@ -80,8 +104,14 @@ const useKeyboardHighlight = (isGameActive) => {
         "w",
         "x",
         "y",
+        "t",
+        "u",
+        "v",
+        "w",
+        "x",
+        "y",
         "z",
-        // Số
+        // Số 0-9
         "0",
         "1",
         "2",
@@ -106,33 +136,44 @@ const useKeyboardHighlight = (isGameActive) => {
         "/",
       ];
 
+      // Chỉ highlight các phím hợp lệ
       if (validKeys.includes(key)) {
         setHighlightKey(key);
       }
     };
 
+    /**
+     * Xử lý khi nhả phím - clear highlight
+     */
     const handleUp = () => setHighlightKey("");
 
+    // === EVENT LISTENERS ===
     window.addEventListener("keydown", handleDown);
     window.addEventListener("keyup", handleUp);
 
+    // === CLEANUP ===
     return () => {
       window.removeEventListener("keydown", handleDown);
       window.removeEventListener("keyup", handleUp);
     };
   }, [isGameActive]);
 
-  // Hàm để highlight khi nhấn phím ảo
+  // === VIRTUAL KEYBOARD HIGHLIGHT ===
+  /**
+   * Hàm để highlight khi nhấn phím ảo
+   * @param {string} key - Phím được click trên virtual keyboard
+   */
   const highlightVirtualKey = (key) => {
     if (!isGameActive) return;
     setHighlightKey(key);
+    // Auto clear sau 150ms
     setTimeout(() => setHighlightKey(""), 150);
   };
 
+  // === RETURN INTERFACE ===
   return {
-    highlightKey,
-    highlightVirtualKey,
-    setHighlightKey,
+    highlightKey, // Phím đang được highlight
+    highlightVirtualKey, // Hàm highlight cho virtual keyboard
   };
 };
 

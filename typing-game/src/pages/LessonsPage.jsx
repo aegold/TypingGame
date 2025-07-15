@@ -4,18 +4,29 @@ import axios from "../api/axios";
 import "../styles/TypingGame.css";
 import "../styles/LessonsPage.css";
 
+/**
+ * LessonsPage Component
+ * Trang hiển thị danh sách bài học được phân loại theo categories
+ * User có thể chọn bài học để chơi
+ */
 function LessonsPage() {
-  const [lessons, setLessons] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // === STATE MANAGEMENT ===
+  const [lessons, setLessons] = useState([]); // Danh sách tất cả bài học
+  const [categories, setCategories] = useState([]); // Danh sách categories
+  const [loading, setLoading] = useState(true); // Trạng thái loading
+  const [error, setError] = useState(null); // Thông báo lỗi
   const navigate = useNavigate();
 
+  // === DATA FETCHING ===
+  /**
+   * Fetch data khi component mount
+   * Lấy cả lessons và categories cùng lúc để hiển thị
+   */
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch cả lessons và categories
+        // Fetch cả lessons và categories cùng lúc
         const [lessonsResponse, categoriesResponse] = await Promise.all([
           axios.get("/api/lessons"),
           axios.get("/api/categories"),
@@ -35,6 +46,10 @@ function LessonsPage() {
     fetchData();
   }, []);
 
+  // === UTILITY FUNCTIONS ===
+  /**
+   * Chuyển đổi gameType thành label hiển thị
+   */
   const getGameTypeLabel = (type) => {
     switch (type) {
       case "letterTyper":
@@ -43,17 +58,22 @@ function LessonsPage() {
         return "Gõ từ";
       case "paragraphTyper":
         return "Gõ đoạn văn";
+      case "vietnameseLetterTyper":
+        return "Gõ ký tự tiếng Việt";
       default:
         return type;
     }
   };
 
-  // Nhóm lessons theo category và sắp xếp
+  /**
+   * Nhóm lessons theo category và sắp xếp
+   * Trả về object với lessons được grouped và lessons chưa có category
+   */
   const groupLessonsByCategory = () => {
-    const grouped = {};
-    const uncategorized = [];
+    const grouped = {}; // {categoryId: [lessons]}
+    const uncategorized = []; // Lessons không có category
 
-    // Phân loại lessons
+    // Phân loại lessons theo category
     lessons.forEach((lesson) => {
       if (lesson.category) {
         if (!grouped[lesson.category]) {
@@ -76,6 +96,7 @@ function LessonsPage() {
     return { grouped, uncategorized };
   };
 
+  // === RENDER CONDITIONS ===
   if (loading) {
     return (
       <div className="lessons-page-bg">

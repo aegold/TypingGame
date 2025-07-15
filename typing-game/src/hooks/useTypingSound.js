@@ -1,48 +1,66 @@
 import { useRef, useCallback, useEffect } from "react";
 
+/**
+ * useTypingSound Hook
+ *
+ * Custom hook để xử lý âm thanh khi gõ phím
+ * Hỗ trợ:
+ * - Phát âm thanh khi gõ phím
+ * - Tắt/bật âm thanh
+ * - Xử lý audio context unlock (browser policy)
+ * - Volume control
+ */
 const useTypingSound = () => {
-  const audioRef = useRef(null);
-  const isEnabledRef = useRef(true);
-  const audioContextUnlockedRef = useRef(false);
+  // === REFS ===
+  const audioRef = useRef(null); // Audio element
+  const isEnabledRef = useRef(true); // Trạng thái bật/tắt âm thanh
+  const audioContextUnlockedRef = useRef(false); // Đã unlock audio context chưa
 
-  // Initialize audio
+  // === AUDIO INITIALIZATION ===
+  /**
+   * Khởi tạo audio element
+   */
   const initAudio = useCallback(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio("/sounds/key_sound.wav");
       audioRef.current.volume = 0.3; // Set volume to 30%
       audioRef.current.preload = "auto";
 
-      // Try to load audio
+      // Load audio file
       audioRef.current.load();
     }
   }, []);
 
-  // Play sound
+  // === SOUND PLAYBACK ===
+  /**
+   * Phát âm thanh gõ phím
+   * Xử lý browser audio policy và autoplay restrictions
+   */
   const playSound = useCallback(() => {
     if (!isEnabledRef.current) return;
 
     try {
-      // Ensure audio is initialized
+      // Đảm bảo audio đã được khởi tạo
       if (!audioRef.current) {
         initAudio();
       }
 
       if (audioRef.current) {
-        // Reset audio to beginning
+        // Reset audio về đầu để có thể phát liên tục
         audioRef.current.currentTime = 0;
 
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              // Mark as unlocked if play succeeds
+              // Đánh dấu audio context đã unlock
               audioContextUnlockedRef.current = true;
             })
             .catch((error) => {
               console.warn("Audio play failed:", error);
-              // For first interaction, browser might still need user gesture
+              // Lần đầu tiên có thể chưa có user gesture
               if (!audioContextUnlockedRef.current) {
-                // Try to unlock with silent play on next user interaction
+                // Thử unlock audio context với silent play
                 const unlockOnNextInteraction = () => {
                   if (audioRef.current) {
                     const originalVolume = audioRef.current.volume;
@@ -62,7 +80,7 @@ const useTypingSound = () => {
                         });
                     }
                   }
-                  // Remove listener after first attempt
+                  // Xóa listener sau khi thử unlock
                   document.removeEventListener(
                     "click",
                     unlockOnNextInteraction
@@ -73,6 +91,7 @@ const useTypingSound = () => {
                   );
                 };
 
+                // Listen for user interaction để unlock
                 document.addEventListener("click", unlockOnNextInteraction, {
                   once: true,
                 });
@@ -88,34 +107,46 @@ const useTypingSound = () => {
     }
   }, [initAudio]);
 
-  // Initialize audio when hook is first used
+  // === AUDIO INITIALIZATION ON MOUNT ===
+  /**
+   * Khởi tạo audio khi hook được mount
+   */
   useEffect(() => {
     initAudio();
   }, [initAudio]);
 
-  // Toggle sound on/off
+  // === SOUND CONTROLS ===
+  /**
+   * Toggle âm thanh bật/tắt
+   */
   const toggleSound = useCallback(() => {
     isEnabledRef.current = !isEnabledRef.current;
     return isEnabledRef.current;
   }, []);
 
-  // Check if sound is enabled
+  /**
+   * Kiểm tra trạng thái âm thanh
+   */
   const isSoundEnabled = useCallback(() => {
     return isEnabledRef.current;
   }, []);
 
-  // Set volume
+  /**
+   * Set volume cho âm thanh
+   * @param {number} volume - Volume từ 0 đến 1
+   */
   const setVolume = useCallback((volume) => {
     if (audioRef.current) {
       audioRef.current.volume = Math.max(0, Math.min(1, volume));
     }
   }, []);
 
+  // === RETURN HOOK INTERFACE ===
   return {
-    playSound,
-    toggleSound,
-    isSoundEnabled,
-    setVolume,
+    playSound, // Phát âm thanh gõ phím
+    toggleSound, // Bật/tắt âm thanh
+    isSoundEnabled, // Kiểm tra trạng thái âm thanh
+    setVolume, // Điều chỉnh âm lượng
   };
 };
 

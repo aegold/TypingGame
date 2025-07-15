@@ -1,11 +1,21 @@
 /**
- * Simple Vietnamese Telex Converter
- * Converts Telex input to Vietnamese characters
+ * Vietnamese Telex Converter Utility
+ *
+ * Hệ thống chuyển đổi và xử lý Telex để gõ tiếng Việt
+ * Bao gồm các rule chuyển đổi và logic xử lý sequence
+ *
+ * Telex là phương pháp gõ tiếng Việt phổ biến:
+ * - aa -> â, aw -> ă, ee -> ê, oo -> ô, ow -> ơ, uw -> ư
+ * - dd -> đ
+ * - f -> huyền, s -> sắc, r -> hỏi, x -> ngã, j -> nặng
  */
 
-// Basic Telex rules - chỉ những rule cơ bản nhất
+// === BASIC TELEX RULES ===
+/**
+ * Quy tắc Telex cơ bản cho nguyên âm và phụ âm
+ */
 const TELEX_RULES = {
-  // Vowels
+  // Vowels (nguyên âm)
   aa: "â",
   aw: "ă",
   ee: "ê",
@@ -13,10 +23,10 @@ const TELEX_RULES = {
   ow: "ơ",
   uw: "ư",
 
-  // Consonants
+  // Consonants (phụ âm)
   dd: "đ",
 
-  // Uppercase versions
+  // Uppercase versions (chữ hoa)
   AA: "Â",
   AW: "Ă",
   EE: "Ê",
@@ -26,7 +36,10 @@ const TELEX_RULES = {
   DD: "Đ",
 };
 
-// Tone marks
+// === TONE MARKS ===
+/**
+ * Các dấu thanh trong tiếng Việt
+ */
 const TONE_MARKS = {
   f: "grave", // huyền: à
   s: "acute", // sắc: á
@@ -40,8 +53,13 @@ const TONE_MARKS = {
   J: "dot",
 };
 
-// Vietnamese vowels that can receive tone marks
+// === VOWELS WITH TONE VARIATIONS ===
+/**
+ * Map các nguyên âm với tất cả biến thể dấu thanh
+ * Index: [0: gốc, 1: sắc, 2: huyền, 3: hỏi, 4: ngã, 5: nặng]
+ */
 const VOWELS_WITH_TONES = {
+  // Lowercase vowels
   a: ["a", "á", "à", "ả", "ã", "ạ"],
   ă: ["ă", "ắ", "ằ", "ẳ", "ẵ", "ặ"],
   â: ["â", "ấ", "ầ", "ẩ", "ẫ", "ậ"],
@@ -54,7 +72,7 @@ const VOWELS_WITH_TONES = {
   u: ["u", "ú", "ù", "ủ", "ũ", "ụ"],
   ư: ["ư", "ứ", "ừ", "ử", "ữ", "ự"],
   y: ["y", "ý", "ỳ", "ỷ", "ỹ", "ỵ"],
-  // Uppercase
+  // Uppercase vowels
   A: ["A", "Á", "À", "Ả", "Ã", "Ạ"],
   Ă: ["Ă", "Ắ", "Ằ", "Ẳ", "Ẵ", "Ặ"],
   Â: ["Â", "Ấ", "Ầ", "Ẩ", "Ẫ", "Ậ"],
@@ -69,11 +87,12 @@ const VOWELS_WITH_TONES = {
   Y: ["Y", "Ý", "Ỳ", "Ỷ", "Ỹ", "Ỵ"],
 };
 
+// === TONE APPLICATION FUNCTIONS ===
 /**
- * Apply tone mark to a vowel
- * @param {string} vowel - The base vowel
- * @param {string} tone - The tone type (grave, acute, hook, tilde, dot)
- * @returns {string} - The vowel with tone mark
+ * Áp dụng dấu thanh cho nguyên âm
+ * @param {string} vowel - Nguyên âm gốc
+ * @param {string} tone - Loại dấu (grave, acute, hook, tilde, dot)
+ * @returns {string} - Nguyên âm có dấu
  */
 function applyTone(vowel, tone) {
   if (!VOWELS_WITH_TONES[vowel]) {
@@ -81,10 +100,10 @@ function applyTone(vowel, tone) {
   }
 
   const toneIndex = {
-    grave: 2, // à
-    acute: 1, // á
-    hook: 3, // ả
-    tilde: 4, // ã
+    grave: 2, // à (huyền)
+    acute: 1, // á (sắc)
+    hook: 3, // ả (hỏi)
+    tilde: 4, // ã (ngã)
     dot: 5, // ạ
   };
 
