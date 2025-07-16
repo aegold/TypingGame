@@ -124,9 +124,9 @@ router.post("/lessons", async (req, res) => {
 // DELETE /api/seed/lessons - Clear all lessons (for testing)
 router.delete("/lessons", async (req, res) => {
   try {
-    console.log("🗑️ Clearing all lessons...");
+    console.log("Clearing all lessons...");
     const result = await Lesson.deleteMany({});
-    console.log(`🗑️ Deleted ${result.deletedCount} lessons`);
+    console.log(`Deleted ${result.deletedCount} lessons`);
 
     res.json({
       success: true,
@@ -135,7 +135,7 @@ router.delete("/lessons", async (req, res) => {
       action: "cleared",
     });
   } catch (err) {
-    console.error("❌ Clear error:", err);
+    console.error("Clear error:", err);
     res.status(500).json({
       success: false,
       error: "Failed to clear lessons",

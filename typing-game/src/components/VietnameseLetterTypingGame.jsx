@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import KeyboardManager, { ACTION_TYPES } from "./KeyboardManager";
 import HandGuide from "./HandGuide";
-import {
-  getTelexSequence,
-  getNextKey,
-  convertTelex,
-} from "../utils/telexConverter";
+import { getTelexSequence, getNextKey } from "../utils/telexConverter";
 import useTypingSound from "../hooks/useTypingSound";
 import "../styles/VietnameseLetterTypingGame.css";
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import "../styles/TypingGame.css";
@@ -15,7 +15,13 @@ function LessonsPage() {
   const [categories, setCategories] = useState([]); // Danh sách categories
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const [error, setError] = useState(null); // Thông báo lỗi
+  const [activeCategory, setActiveCategory] = useState("all"); // Category tab hiện tại
+  const [showBackToTop, setShowBackToTop] = useState(false); // Hiển thị nút back to top
   const navigate = useNavigate();
+
+  // === REFS FOR SMOOTH SCROLLING ===
+  const categoryRefs = useRef({}); // Refs cho các category sections
+  const uncategorizedRef = useRef(null); // Ref cho uncategorized section
 
   // === DATA FETCHING ===
   /**
@@ -44,6 +50,17 @@ function LessonsPage() {
     };
 
     fetchData();
+  }, []);
+
+  // === SCROLL DETECTION FOR BACK TO TOP ===
+  useEffect(() => {
+    const handleScroll = () => {
+      // Hiển thị button khi scroll xuống > 300px
+      setShowBackToTop(window.pageYOffset > 300);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // === UTILITY FUNCTIONS ===
@@ -96,6 +113,51 @@ function LessonsPage() {
     return { grouped, uncategorized };
   };
 
+  // === CATEGORY NAVIGATION FUNCTIONS ===
+  /**
+   * Smooth scroll đến category section với offset cho navigation
+   */
+  const scrollToCategory = (categoryId) => {
+    const targetRef =
+      categoryId === "uncategorized"
+        ? uncategorizedRef.current
+        : categoryRefs.current[categoryId];
+
+    if (targetRef) {
+      // Tính toán offset để không bị che bởi navigation
+      const yOffset = -80; // Offset 80px từ top
+      const y =
+        targetRef.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+      window.scrollTo({
+        top: y,
+        behavior: "smooth",
+      });
+      setActiveCategory(categoryId);
+    }
+  };
+
+  /**
+   * Hiển thị tất cả và scroll về top
+   */
+  const handleShowAll = () => {
+    setActiveCategory("all");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /**
+   * Scroll về đầu trang (cho back to top button)
+   */
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   // === RENDER CONDITIONS ===
   if (loading) {
     return (
@@ -121,9 +183,50 @@ function LessonsPage() {
       <div className="lessons-page-container">
         <h1 className="lessons-title">Chọn bài học</h1>
 
+        {/* === CATEGORY NAVIGATION TABS === */}
+        <div className="category-navigation">
+          <button
+            className={`category-tab ${
+              activeCategory === "all" ? "active" : ""
+            }`}
+            onClick={handleShowAll}
+          >
+            Tất cả
+          </button>
+
+          {uncategorized.length > 0 && (
+            <button
+              className={`category-tab ${
+                activeCategory === "uncategorized" ? "active" : ""
+              }`}
+              onClick={() => scrollToCategory("uncategorized")}
+            >
+              📄 Chưa phân loại
+            </button>
+          )}
+
+          {categories
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .map((category) => (
+              <button
+                key={category._id}
+                className={`category-tab ${
+                  activeCategory === category._id ? "active" : ""
+                }`}
+                onClick={() => scrollToCategory(category._id)}
+              >
+                {category.name}
+              </button>
+            ))}
+        </div>
+
         {/* Hiển thị uncategorized lessons trước */}
         {uncategorized.length > 0 && (
-          <div className="category-section">
+          <div
+            className="category-section"
+            ref={uncategorizedRef}
+            id="category-uncategorized"
+          >
             <h2 className="category-title">Chưa phân loại</h2>
             <div className="lessons-list">
               {uncategorized.map((lesson) => (
@@ -152,7 +255,12 @@ function LessonsPage() {
             const categoryLessons = grouped[category._id] || [];
 
             return (
-              <div key={category._id} className="category-section">
+              <div
+                key={category._id}
+                className="category-section"
+                ref={(el) => (categoryRefs.current[category._id] = el)}
+                id={`category-${category._id}`}
+              >
                 <h2 className="category-title">{category.name}</h2>
                 {category.description && (
                   <p className="category-description">{category.description}</p>
@@ -186,6 +294,17 @@ function LessonsPage() {
             );
           })}
       </div>
+
+      {/* === BACK TO TOP BUTTON === */}
+      {showBackToTop && (
+        <button
+          className="back-to-top-btn"
+          onClick={scrollToTop}
+          title="Về đầu trang"
+        >
+          ↑
+        </button>
+      )}
     </div>
   );
 }
