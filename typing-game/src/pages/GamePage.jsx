@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import axios from "../api/axios";
 import TypingGame from "../components/TypingGame";
 import ParagraphTypingGame from "../components/ParagraphTypingGame";
@@ -71,7 +72,7 @@ function GamePage() {
     // Gửi điểm lên server nếu user đã đăng nhập
     axios
       .post(
-        "/score",
+        "/api/score",
         {
           lessonId: id,
           score: data.score,
@@ -80,8 +81,8 @@ function GamePage() {
           headers: { Authorization: `Bearer ${token}` },
         }
       )
-      .then(() => alert("Điểm đã được lưu"))
-      .catch(() => alert("Lỗi khi lưu điểm"));
+      .then(() => toast.success("Điểm đã được lưu thành công!"))
+      .catch(() => toast.error("Lỗi khi lưu điểm."));
   };
 
   /**

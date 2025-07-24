@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useState } from "react";
 
 /**
  * useTypingSound Hook
@@ -9,6 +9,7 @@ import { useRef, useCallback, useEffect } from "react";
  * - Tắt/bật âm thanh
  * - Xử lý audio context unlock (browser policy)
  * - Volume control
+ * - Error handling cho production
  */
 const useTypingSound = () => {
   // === REFS ===
@@ -16,15 +17,45 @@ const useTypingSound = () => {
   const isEnabledRef = useRef(true); // Trạng thái bật/tắt âm thanh
   const audioContextUnlockedRef = useRef(false); // Đã unlock audio context chưa
 
+  // === STATE ===
+  const [audioLoaded, setAudioLoaded] = useState(false); // Trạng thái load audio
+  const [audioError, setAudioError] = useState(false); // Lỗi load audio
+
   // === AUDIO INITIALIZATION ===
   /**
    * Khởi tạo audio element
    */
   const initAudio = useCallback(() => {
     if (!audioRef.current) {
-      audioRef.current = new Audio("/sounds/key_sound.wav");
+      // Sử dụng process.env.PUBLIC_URL để đảm bảo đường dẫn đúng với homepage
+      const soundPath = `${process.env.PUBLIC_URL || ""}/sounds/key_sound.wav`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("Loading audio from:", soundPath);
+      }
+
+      audioRef.current = new Audio(soundPath);
       audioRef.current.volume = 0.3; // Set volume to 30%
       audioRef.current.preload = "auto";
+
+      // Success handler
+      audioRef.current.addEventListener("canplaythrough", () => {
+        setAudioLoaded(true);
+        setAudioError(false);
+        if (process.env.NODE_ENV === "development") {
+          console.log("Audio loaded successfully");
+        }
+      });
+
+      // Error handling cho file không tồn tại
+      audioRef.current.addEventListener("error", (e) => {
+        setAudioError(true);
+        setAudioLoaded(false);
+        console.warn("Failed to load audio file:", soundPath);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Audio error details:", e);
+        }
+      });
 
       // Load audio file
       audioRef.current.load();
@@ -37,15 +68,17 @@ const useTypingSound = () => {
    * Xử lý browser audio policy và autoplay restrictions
    */
   const playSound = useCallback(() => {
-    if (!isEnabledRef.current) return;
+    if (!isEnabledRef.current || audioError || !audioLoaded) return;
 
     try {
       // Đảm bảo audio đã được khởi tạo
       if (!audioRef.current) {
         initAudio();
+        return;
       }
 
-      if (audioRef.current) {
+      if (audioRef.current && audioRef.current.readyState >= 2) {
+        // HAVE_CURRENT_DATA
         // Reset audio về đầu để có thể phát liên tục
         audioRef.current.currentTime = 0;
 
@@ -104,8 +137,9 @@ const useTypingSound = () => {
       }
     } catch (error) {
       console.warn("Error playing sound:", error);
+      setAudioError(true);
     }
-  }, [initAudio]);
+  }, [initAudio, audioError, audioLoaded]);
 
   // === AUDIO INITIALIZATION ON MOUNT ===
   /**
@@ -147,6 +181,8 @@ const useTypingSound = () => {
     toggleSound, // Bật/tắt âm thanh
     isSoundEnabled, // Kiểm tra trạng thái âm thanh
     setVolume, // Điều chỉnh âm lượng
+    audioLoaded, // Trạng thái audio đã load
+    audioError, // Trạng thái lỗi audio
   };
 };
 
