@@ -21,9 +21,9 @@ const API_URL = getApiUrl();
 
 // Log để debug (chỉ trong development)
 if (process.env.NODE_ENV === "development") {
-  console.log("🌐 API URL:", API_URL);
+  console.log("API URL:", API_URL);
   console.log(
-    "📝 Environment:",
+    "Environment:",
     process.env.REACT_APP_ENV || process.env.NODE_ENV
   );
 }

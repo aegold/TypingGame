@@ -69,20 +69,25 @@ function GamePage() {
     setResult(data);
     const token = localStorage.getItem("token");
 
-    // Gửi điểm lên server nếu user đã đăng nhập
-    axios
-      .post(
-        "/api/score",
-        {
-          lessonId: id,
-          score: data.score,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-      .then(() => toast.success("Điểm đã được lưu thành công!"))
-      .catch(() => toast.error("Lỗi khi lưu điểm."));
+    // Chỉ gửi điểm lên server nếu user đã đăng nhập
+    if (token) {
+      axios
+        .post(
+          "/api/score",
+          {
+            lessonId: id,
+            score: data.score,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then(() => toast.success("Điểm đã được lưu thành công!"))
+        .catch(() => toast.error("Lỗi khi lưu điểm."));
+    } else {
+      // Thông báo cho user biết cần đăng nhập để lưu điểm
+      toast.info("Đăng nhập để lưu điểm và theo dõi tiến trình!");
+    }
   };
 
   /**

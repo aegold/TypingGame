@@ -225,7 +225,7 @@ function VietnameseLetterTypingGame({ lesson, onComplete }) {
     return (
       <div className="vietnamese-letter-typing-game completed">
         <div className="completion-message">
-          <h2>🎉 Hoàn thành!</h2>
+          <h2>Hoàn thành!</h2>
           <p>Bạn đã học xong tất cả ký tự!</p>
         </div>
       </div>

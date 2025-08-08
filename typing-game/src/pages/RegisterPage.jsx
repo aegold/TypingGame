@@ -53,7 +53,7 @@ function RegisterPage() {
 
       // Toast thành công
       toast.success(
-        "🎉 Đăng ký thành công! Chuyển hướng đến trang đăng nhập...",
+        " Đăng ký thành công! Chuyển hướng đến trang đăng nhập...",
         {
           position: "top-right",
           autoClose: 2000,
@@ -66,7 +66,7 @@ function RegisterPage() {
 
       // Chuyển hướng sau 2 giây
       setTimeout(() => {
-        navigate("/");
+        navigate("/login");
       }, 2000);
     } catch (err) {
       console.error("Registration error:", err);
@@ -74,7 +74,7 @@ function RegisterPage() {
         err.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
 
       // Toast lỗi
-      toast.error(`❌ ${errorMessage}`, {
+      toast.error(` ${errorMessage}`, {
         position: "top-right",
         autoClose: 4000,
         hideProgressBar: false,
@@ -203,7 +203,7 @@ function RegisterPage() {
             <p className="text-sm text-gray-600">
               Đã có tài khoản?{" "}
               <Link
-                to="/"
+                to="/login"
                 className="font-medium text-purple-600 hover:text-purple-500"
               >
                 Đăng nhập ngay

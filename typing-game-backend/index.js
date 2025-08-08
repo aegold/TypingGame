@@ -6,6 +6,9 @@ const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
 
+// Lấy API prefix từ environment variable
+const API_PREFIX = process.env.API_PREFIX || "/api";
+
 // Security middleware
 app.use(
   cors({
@@ -51,22 +54,25 @@ app.get("/", (req, res) => {
 });
 
 const authRoutes = require("./routes/auth");
-app.use("/api/auth", authRoutes);
+app.use(`${API_PREFIX}/auth`, authRoutes);
 
 const userRoutes = require("./routes/user");
-app.use("/api", userRoutes);
+app.use(`${API_PREFIX}`, userRoutes);
 
 const lessonRoutes = require("./routes/lesson");
-app.use("/api/lessons", lessonRoutes);
+app.use(`${API_PREFIX}/lessons`, lessonRoutes);
 
 const categoryRoutes = require("./routes/category");
-app.use("/api/categories", categoryRoutes);
+app.use(`${API_PREFIX}/categories`, categoryRoutes);
 
 const seedRoutes = require("./routes/seed");
-app.use("/api/seed", seedRoutes);
+app.use(`${API_PREFIX}/seed`, seedRoutes);
 
 const adminRoutes = require("./routes/admin");
-app.use("/api/admin", adminRoutes);
+app.use(`${API_PREFIX}/admin`, adminRoutes);
+
+const leaderboardRoutes = require("./routes/leaderboard");
+app.use(`${API_PREFIX}`, leaderboardRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI)

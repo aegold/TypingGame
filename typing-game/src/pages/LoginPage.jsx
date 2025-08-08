@@ -2,35 +2,38 @@ import React, { useState } from "react";
 import axios from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuth } from "../contexts/AuthContext";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
-      toast.error("❌ Vui lòng nhập đầy đủ thông tin");
+      toast.error(" Vui lòng nhập đầy đủ thông tin");
       return;
     }
 
     setLoading(true);
     try {
       const res = await axios.post("/api/auth/login", { username, password });
-      localStorage.setItem("token", res.data.token);
 
-      toast.success("✅ Đăng nhập thành công!", {
+      // Use AuthContext login method
+      login(res.data.token, { username });
+
+      toast.success(" Đăng nhập thành công!", {
         autoClose: 1000,
       });
 
-      setTimeout(() => {
-        navigate("/lessons");
-      }, 1000);
+      // Navigate immediately to trigger location change effect
+      navigate("/lessons");
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "Sai tài khoản hoặc mật khẩu";
-      toast.error(`❌ ${errorMessage}`);
+      toast.error(`${errorMessage}`);
     } finally {
       setLoading(false);
     }

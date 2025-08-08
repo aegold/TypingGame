@@ -43,7 +43,8 @@ router.post("/score", auth, async (req, res) => {
     }
 
     user.totalScore += score;
-    user.history.push({ gameId: lessonId, score });
+    // Lưu timestamp rõ ràng để leaderboard theo mốc thời gian hoạt động ổn định
+    user.history.push({ gameId: lessonId, score, date: new Date() });
     await user.save();
 
     res.json({ message: "Score updated", totalScore: user.totalScore });

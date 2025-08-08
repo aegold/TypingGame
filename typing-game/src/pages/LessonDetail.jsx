@@ -32,70 +32,76 @@ function LessonDetail() {
 
   if (loading) {
     return (
-      <div className="lesson-detail-bg">
-        <div>Đang tải thông tin bài học...</div>
+      <div className="page-content">
+        <div className="lesson-detail-bg">
+          <div>Đang tải thông tin bài học...</div>
+        </div>
       </div>
     );
   }
 
   if (error || !lesson) {
     return (
-      <div className="lesson-detail-bg">
-        <div>Lỗi: {error || "Không tìm thấy bài học"}</div>
-        <button onClick={() => navigate("/lessons")}>
-          Về danh sách bài học
-        </button>
+      <div className="page-content">
+        <div className="lesson-detail-bg">
+          <div>Lỗi: {error || "Không tìm thấy bài học"}</div>
+          <button onClick={() => navigate("/lessons")}>
+            Về danh sách bài học
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="lesson-detail-bg">
-      <div className="lesson-detail-card">
-        <div className="lesson-title">{lesson.title}</div>
+    <div className="page-content no-padding">
+      <div className="lesson-detail-bg">
+        <div className="lesson-detail-card">
+          <div className="lesson-title">{lesson.title}</div>
 
-        <div className="lesson-info">
-          <div className="info-item">
-            <strong>Loại game:</strong> {lesson.gameType}
-          </div>
-          <div className="info-item">
-            <strong>Thời gian:</strong> {lesson.timer} giây
-          </div>
-          <div className="info-item">
-            <strong>Số từ:</strong> {lesson.words.length} từ
-          </div>
-        </div>
-
-        {lesson.videoUrl && (
-          <>
-            <div className="lesson-video-wrap">
-              <iframe
-                width="480"
-                height="270"
-                src={lesson.videoUrl}
-                title="Video hướng dẫn"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ borderRadius: 16, margin: "24px 0" }}
-              ></iframe>
+          <div className="lesson-info">
+            <div className="info-item">
+              <strong>Loại game:</strong> {lesson.gameType}
             </div>
-            <button
-              className="lesson-detail-btn"
-              onClick={() => alert("Đã xem xong video!")}
-            >
-              Đã xem xong
-            </button>
-          </>
-        )}
+            <div className="info-item">
+              <strong>Thời gian:</strong> {lesson.timer} giây
+            </div>
+            <div className="info-item">
+              <strong>Số từ:</strong> {lesson.words.length} từ
+            </div>
+          </div>
 
-        <button
-          className="lesson-detail-btn"
-          onClick={() => navigate(`/game/${lesson._id}`)}
-          style={{ marginTop: 32 }}
-        >
-          Bắt đầu luyện tập
-        </button>
+          {lesson.videoUrl && (
+            <>
+              <div className="lesson-video-wrap">
+                <iframe
+                  width="480"
+                  height="270"
+                  src={lesson.videoUrl}
+                  title="Video hướng dẫn"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ borderRadius: 16, margin: "24px 0" }}
+                ></iframe>
+              </div>
+              <button
+                className="lesson-detail-btn"
+                onClick={() => alert("Đã xem xong video!")}
+              >
+                Đã xem xong
+              </button>
+            </>
+          )}
+
+          <button
+            className="lesson-detail-btn"
+            onClick={() => navigate(`/game/${lesson._id}`)}
+            style={{ marginTop: 32 }}
+          >
+            Bắt đầu luyện tập
+          </button>
+        </div>
       </div>
     </div>
   );

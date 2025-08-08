@@ -367,400 +367,417 @@ const AdminDashboard = () => {
   // Hiển thị loading khi đang kiểm tra authentication
   if (checkingAuth) {
     return (
-      <div className="admin-dashboard">Đang kiểm tra quyền truy cập...</div>
+      <div className="page-content">
+        <div className="admin-dashboard">Đang kiểm tra quyền truy cập...</div>
+      </div>
     );
   }
 
   // Hiển thị thông báo nếu không có quyền admin
   if (!isAdmin) {
-    return <div className="admin-dashboard">Không có quyền truy cập.</div>;
+    return (
+      <div className="page-content">
+        <div className="admin-dashboard">Không có quyền truy cập.</div>
+      </div>
+    );
   }
 
   // Hiển thị loading khi đang fetch data
   if (loading) {
-    return <div className="admin-dashboard">Đang tải...</div>;
+    return (
+      <div className="page-content">
+        <div className="admin-dashboard">Đang tải...</div>
+      </div>
+    );
   }
 
   // === MAIN RENDER ===
   return (
-    <div className="admin-dashboard">
-      {/* Header với navigation tabs */}
-      <div className="admin-header">
-        <h1>Quản trị</h1>
-        <div className="tab-nav">
-          <button
-            className={activeTab === "lessons" ? "active" : ""}
-            onClick={() => setActiveTab("lessons")}
-          >
-            Quản lý Lessons
-          </button>
-          <button
-            className={activeTab === "categories" ? "active" : ""}
-            onClick={() => setActiveTab("categories")}
-          >
-            Quản lý Categories
-          </button>
-        </div>
-      </div>
-
-      {/* Hiển thị error message nếu có */}
-      {error && <div className="error-message">{error}</div>}
-
-      {/* === TAB CATEGORIES === */}
-      {activeTab === "categories" && (
-        <div className="categories-tab">
-          {/* Button tạo category mới */}
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setShowCategoryForm(true);
-              setEditingCategory(null);
-              setCategoryForm({
-                name: "",
-                description: "",
-                order: 0,
-                color: "#888888",
-              });
-            }}
-          >
-            Tạo category mới
-          </button>
-
-          {/* Form tạo/sửa category */}
-          {showCategoryForm && (
-            <div className="form-overlay">
-              <div className="form-container">
-                <h2>
-                  {editingCategory ? "Chỉnh sửa category" : "Tạo category mới"}
-                </h2>
-                <form onSubmit={handleCategorySubmit}>
-                  <div className="form-group">
-                    <label>Tên category:</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={categoryForm.name}
-                      onChange={handleCategoryInput}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Mô tả:</label>
-                    <textarea
-                      name="description"
-                      value={categoryForm.description}
-                      onChange={handleCategoryInput}
-                      rows="3"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Thứ tự (order):</label>
-                    <input
-                      type="number"
-                      name="order"
-                      value={categoryForm.order}
-                      onChange={handleCategoryInput}
-                      min="0"
-                    />
-                  </div>
-                  <div className="form-actions">
-                    <button type="submit" className="btn btn-primary">
-                      {editingCategory ? "Cập nhật" : "Tạo"}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => {
-                        setShowCategoryForm(false);
-                        setEditingCategory(null);
-                      }}
-                    >
-                      Hủy
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Grid hiển thị danh sách categories */}
-          <div className="categories-grid">
-            {categories.length === 0 ? (
-              <p>Chưa có category nào.</p>
-            ) : (
-              categories.map((category) => (
-                <div key={category._id} className="category-card">
-                  <div className="category-header">
-                    <h3>{category.name}</h3>
-                    <span className="category-order">#{category.order}</span>
-                  </div>
-                  <div className="category-desc">{category.description}</div>
-                  <div className="category-actions">
-                    <button
-                      className="btn btn-edit"
-                      onClick={() => handleEditCategory(category)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      className="btn btn-delete"
-                      onClick={() => handleDeleteCategory(category)}
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* === TAB LESSONS === */}
-      {activeTab === "lessons" && (
-        <>
-          {/* Button tạo lesson mới */}
-          <div className="lesson-filter">
+    <div className="page-content no-padding">
+      <div className="admin-dashboard">
+        {/* Header với navigation tabs */}
+        <div className="admin-header">
+          <h1>Quản trị</h1>
+          <div className="tab-nav">
             <button
-              className="btn btn-primary"
-              onClick={() => setShowCreateForm(true)}
+              className={activeTab === "lessons" ? "active" : ""}
+              onClick={() => setActiveTab("lessons")}
             >
-              Tạo bài học mới
+              Quản lý Lessons
+            </button>
+            <button
+              className={activeTab === "categories" ? "active" : ""}
+              onClick={() => setActiveTab("categories")}
+            >
+              Quản lý Categories
             </button>
           </div>
+        </div>
 
-          {/* Form tạo/sửa lesson */}
-          {showCreateForm && (
-            <div className="form-overlay">
-              <div className="form-container">
-                <h2>
-                  {editingLesson ? "Chỉnh sửa bài học" : "Tạo bài học mới"}
-                </h2>
-                <form onSubmit={handleSubmit}>
-                  {/* Tiêu đề lesson */}
-                  <div className="form-group">
-                    <label>Tiêu đề:</label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
+        {/* Hiển thị error message nếu có */}
+        {error && <div className="error-message">{error}</div>}
 
-                  {/* URL video hướng dẫn (optional) */}
-                  <div className="form-group">
-                    <label>URL Video (tùy chọn):</label>
-                    <input
-                      type="url"
-                      name="videoUrl"
-                      value={formData.videoUrl}
-                      onChange={handleInputChange}
-                    />
-                  </div>
+        {/* === TAB CATEGORIES === */}
+        {activeTab === "categories" && (
+          <div className="categories-tab">
+            {/* Button tạo category mới */}
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setShowCategoryForm(true);
+                setEditingCategory(null);
+                setCategoryForm({
+                  name: "",
+                  description: "",
+                  order: 0,
+                  color: "#888888",
+                });
+              }}
+            >
+              Tạo category mới
+            </button>
 
-                  {/* Loại game */}
-                  <div className="form-group">
-                    <label>Loại game:</label>
-                    <select
-                      name="gameType"
-                      value={formData.gameType}
-                      onChange={handleInputChange}
-                    >
-                      <option value="letterTyper">Gõ chữ cái</option>
-                      <option value="wordTyper">Gõ từ</option>
-                      <option value="paragraphTyper">Gõ đoạn văn</option>
-                      <option value="vietnameseLetterTyper">
-                        Gõ ký tự tiếng Việt
-                      </option>
-                    </select>
-                  </div>
+            {/* Form tạo/sửa category */}
+            {showCategoryForm && (
+              <div className="form-overlay">
+                <div className="form-container">
+                  <h2>
+                    {editingCategory
+                      ? "Chỉnh sửa category"
+                      : "Tạo category mới"}
+                  </h2>
+                  <form onSubmit={handleCategorySubmit}>
+                    <div className="form-group">
+                      <label>Tên category:</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={categoryForm.name}
+                        onChange={handleCategoryInput}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Mô tả:</label>
+                      <textarea
+                        name="description"
+                        value={categoryForm.description}
+                        onChange={handleCategoryInput}
+                        rows="3"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Thứ tự (order):</label>
+                      <input
+                        type="number"
+                        name="order"
+                        value={categoryForm.order}
+                        onChange={handleCategoryInput}
+                        min="0"
+                      />
+                    </div>
+                    <div className="form-actions">
+                      <button type="submit" className="btn btn-primary">
+                        {editingCategory ? "Cập nhật" : "Tạo"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => {
+                          setShowCategoryForm(false);
+                          setEditingCategory(null);
+                        }}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
-                  {/* Thời gian game */}
-                  <div className="form-group">
-                    <label>Thời gian (giây):</label>
-                    <input
-                      type="number"
-                      name="timer"
-                      value={formData.timer}
-                      onChange={handleInputChange}
-                      min="1"
-                      max="600"
-                      required
-                    />
-                  </div>
-
-                  {/* Category selection */}
-                  <div className="form-group">
-                    <label>Category:</label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Chọn category</option>
-                      {categories.map((cat) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Thứ tự lesson trong category */}
-                  <div className="form-group">
-                    <label>Thứ tự (order):</label>
-                    <input
-                      type="number"
-                      name="order"
-                      value={formData.order}
-                      onChange={handleInputChange}
-                      min="0"
-                    />
-                  </div>
-
-                  {/* Nội dung words - thay đổi theo gameType */}
-                  <div className="form-group">
-                    <label>{getContentLabel(formData.gameType)}</label>
-                    <textarea
-                      name="words"
-                      value={formData.words}
-                      onChange={handleInputChange}
-                      rows={formData.gameType === "paragraphTyper" ? "8" : "12"}
-                      placeholder={getContentPlaceholder(formData.gameType)}
-                      required
-                    />
-                    {/* Help text cho từng loại game */}
-                    <div className="form-help">
-                      {formData.gameType === "letterTyper" && (
-                        <p>
-                          Nhập các chữ cái riêng lẻ, mỗi chữ một dòng hoặc dạng
-                          JSON array.
-                        </p>
-                      )}
-                      {formData.gameType === "wordTyper" && (
-                        <p>
-                          Nhập các từ riêng lẻ, mỗi từ một dòng hoặc dạng JSON
-                          array.
-                        </p>
-                      )}
-                      {formData.gameType === "paragraphTyper" && (
-                        <p>
-                          Nhập một đoạn văn bản hoàn chỉnh để người dùng gõ
-                          theo.
-                        </p>
-                      )}
-                      {formData.gameType === "vietnameseLetterTyper" && (
-                        <p>
-                          Nhập các ký tự tiếng Việt có dấu, mỗi ký tự một dòng.
-                          Ví dụ: á, à, ả, ã, ạ, â, ấ, ầ, ă, ắ, ằ, đ, v.v. Người
-                          dùng sẽ học cách gõ Telex để tạo ra các ký tự này.
-                        </p>
-                      )}
+            {/* Grid hiển thị danh sách categories */}
+            <div className="categories-grid">
+              {categories.length === 0 ? (
+                <p>Chưa có category nào.</p>
+              ) : (
+                categories.map((category) => (
+                  <div key={category._id} className="category-card">
+                    <div className="category-header">
+                      <h3>{category.name}</h3>
+                      <span className="category-order">#{category.order}</span>
+                    </div>
+                    <div className="category-desc">{category.description}</div>
+                    <div className="category-actions">
+                      <button
+                        className="btn btn-edit"
+                        onClick={() => handleEditCategory(category)}
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        className="btn btn-delete"
+                        onClick={() => handleDeleteCategory(category)}
+                      >
+                        Xóa
+                      </button>
                     </div>
                   </div>
-
-                  {/* Form actions */}
-                  <div className="form-actions">
-                    <button type="submit" className="btn btn-primary">
-                      {editingLesson ? "Cập nhật" : "Tạo"}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={cancelEdit}
-                    >
-                      Hủy
-                    </button>
-                  </div>
-                </form>
-              </div>
+                ))
+              )}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Grid hiển thị danh sách lessons */}
-          <div className="admin-lessons-list">
-            {lessons.length === 0 ? (
-              <p>Chưa có bài học nào.</p>
-            ) : (
-              <div className="admin-lessons-grid">
-                {lessons
-                  .sort((a, b) => {
-                    // Sort theo category order, rồi lesson order
-                    const catA = categories.find(
-                      (c) => c._id === a.category
-                    ) || { order: 9999 };
-                    const catB = categories.find(
-                      (c) => c._id === b.category
-                    ) || { order: 9999 };
-                    if (catA.order !== catB.order)
-                      return catA.order - catB.order;
-                    return (a.order || 0) - (b.order || 0);
-                  })
-                  .map((lesson) => (
-                    <div key={lesson._id} className="admin-lesson-card">
-                      {/* Header với title và game type */}
-                      <div className="admin-lesson-header">
-                        <h3>{lesson.title}</h3>
-                        <div className="admin-lesson-type">
-                          {getGameTypeLabel(lesson.gameType)}
-                        </div>
-                      </div>
+        {/* === TAB LESSONS === */}
+        {activeTab === "lessons" && (
+          <>
+            {/* Button tạo lesson mới */}
+            <div className="lesson-filter">
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowCreateForm(true)}
+              >
+                Tạo bài học mới
+              </button>
+            </div>
 
-                      {/* Chi tiết lesson */}
-                      <div className="admin-lesson-details">
-                        <p>
-                          <strong>Thời gian:</strong> {lesson.timer}s
-                        </p>
-                        <p>
-                          <strong>Số từ/ký tự:</strong>{" "}
-                          {Array.isArray(lesson.words)
-                            ? lesson.words.length
-                            : 1}
-                        </p>
-                        <p>
-                          <strong>Category:</strong>{" "}
-                          {categories.find((c) => c._id === lesson.category)
-                            ?.name || "Chưa phân loại"}
-                        </p>
-                        {lesson.videoUrl && (
+            {/* Form tạo/sửa lesson */}
+            {showCreateForm && (
+              <div className="form-overlay">
+                <div className="form-container">
+                  <h2>
+                    {editingLesson ? "Chỉnh sửa bài học" : "Tạo bài học mới"}
+                  </h2>
+                  <form onSubmit={handleSubmit}>
+                    {/* Tiêu đề lesson */}
+                    <div className="form-group">
+                      <label>Tiêu đề:</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+
+                    {/* URL video hướng dẫn (optional) */}
+                    <div className="form-group">
+                      <label>URL Video (tùy chọn):</label>
+                      <input
+                        type="url"
+                        name="videoUrl"
+                        value={formData.videoUrl}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+
+                    {/* Loại game */}
+                    <div className="form-group">
+                      <label>Loại game:</label>
+                      <select
+                        name="gameType"
+                        value={formData.gameType}
+                        onChange={handleInputChange}
+                      >
+                        <option value="letterTyper">Gõ chữ cái</option>
+                        <option value="wordTyper">Gõ từ</option>
+                        <option value="paragraphTyper">Gõ đoạn văn</option>
+                        <option value="vietnameseLetterTyper">
+                          Gõ ký tự tiếng Việt
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Thời gian game */}
+                    <div className="form-group">
+                      <label>Thời gian (giây):</label>
+                      <input
+                        type="number"
+                        name="timer"
+                        value={formData.timer}
+                        onChange={handleInputChange}
+                        min="1"
+                        max="600"
+                        required
+                      />
+                    </div>
+
+                    {/* Category selection */}
+                    <div className="form-group">
+                      <label>Category:</label>
+                      <select
+                        name="category"
+                        value={formData.category}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Chọn category</option>
+                        {categories.map((cat) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Thứ tự lesson trong category */}
+                    <div className="form-group">
+                      <label>Thứ tự (order):</label>
+                      <input
+                        type="number"
+                        name="order"
+                        value={formData.order}
+                        onChange={handleInputChange}
+                        min="0"
+                      />
+                    </div>
+
+                    {/* Nội dung words - thay đổi theo gameType */}
+                    <div className="form-group">
+                      <label>{getContentLabel(formData.gameType)}</label>
+                      <textarea
+                        name="words"
+                        value={formData.words}
+                        onChange={handleInputChange}
+                        rows={
+                          formData.gameType === "paragraphTyper" ? "8" : "12"
+                        }
+                        placeholder={getContentPlaceholder(formData.gameType)}
+                        required
+                      />
+                      {/* Help text cho từng loại game */}
+                      <div className="form-help">
+                        {formData.gameType === "letterTyper" && (
                           <p>
-                            <strong>Video:</strong>{" "}
-                            <a
-                              href={lesson.videoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Xem
-                            </a>
+                            Nhập các chữ cái riêng lẻ, mỗi chữ một dòng hoặc
+                            dạng JSON array.
+                          </p>
+                        )}
+                        {formData.gameType === "wordTyper" && (
+                          <p>
+                            Nhập các từ riêng lẻ, mỗi từ một dòng hoặc dạng JSON
+                            array.
+                          </p>
+                        )}
+                        {formData.gameType === "paragraphTyper" && (
+                          <p>
+                            Nhập một đoạn văn bản hoàn chỉnh để người dùng gõ
+                            theo.
+                          </p>
+                        )}
+                        {formData.gameType === "vietnameseLetterTyper" && (
+                          <p>
+                            Nhập các ký tự tiếng Việt có dấu, mỗi ký tự một
+                            dòng. Ví dụ: á, à, ả, ã, ạ, â, ấ, ầ, ă, ắ, ằ, đ,
+                            v.v. Người dùng sẽ học cách gõ Telex để tạo ra các
+                            ký tự này.
                           </p>
                         )}
                       </div>
-
-                      {/* Actions cho lesson */}
-                      <div className="admin-lesson-actions">
-                        <button
-                          className="btn btn-edit"
-                          onClick={() => handleEdit(lesson)}
-                        >
-                          Chỉnh sửa
-                        </button>
-                        <button
-                          className="btn btn-delete"
-                          onClick={() => handleDelete(lesson._id)}
-                        >
-                          Xóa
-                        </button>
-                      </div>
                     </div>
-                  ))}
+
+                    {/* Form actions */}
+                    <div className="form-actions">
+                      <button type="submit" className="btn btn-primary">
+                        {editingLesson ? "Cập nhật" : "Tạo"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={cancelEdit}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
-          </div>
-        </>
-      )}
+
+            {/* Grid hiển thị danh sách lessons */}
+            <div className="admin-lessons-list">
+              {lessons.length === 0 ? (
+                <p>Chưa có bài học nào.</p>
+              ) : (
+                <div className="admin-lessons-grid">
+                  {lessons
+                    .sort((a, b) => {
+                      // Sort theo category order, rồi lesson order
+                      const catA = categories.find(
+                        (c) => c._id === a.category
+                      ) || { order: 9999 };
+                      const catB = categories.find(
+                        (c) => c._id === b.category
+                      ) || { order: 9999 };
+                      if (catA.order !== catB.order)
+                        return catA.order - catB.order;
+                      return (a.order || 0) - (b.order || 0);
+                    })
+                    .map((lesson) => (
+                      <div key={lesson._id} className="admin-lesson-card">
+                        {/* Header với title và game type */}
+                        <div className="admin-lesson-header">
+                          <h3>{lesson.title}</h3>
+                          <div className="admin-lesson-type">
+                            {getGameTypeLabel(lesson.gameType)}
+                          </div>
+                        </div>
+
+                        {/* Chi tiết lesson */}
+                        <div className="admin-lesson-details">
+                          <p>
+                            <strong>Thời gian:</strong> {lesson.timer}s
+                          </p>
+                          <p>
+                            <strong>Số từ/ký tự:</strong>{" "}
+                            {Array.isArray(lesson.words)
+                              ? lesson.words.length
+                              : 1}
+                          </p>
+                          <p>
+                            <strong>Category:</strong>{" "}
+                            {categories.find((c) => c._id === lesson.category)
+                              ?.name || "Chưa phân loại"}
+                          </p>
+                          {lesson.videoUrl && (
+                            <p>
+                              <strong>Video:</strong>{" "}
+                              <a
+                                href={lesson.videoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Xem
+                              </a>
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Actions cho lesson */}
+                        <div className="admin-lesson-actions">
+                          <button
+                            className="btn btn-edit"
+                            onClick={() => handleEdit(lesson)}
+                          >
+                            Chỉnh sửa
+                          </button>
+                          <button
+                            className="btn btn-delete"
+                            onClick={() => handleDelete(lesson._id)}
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
