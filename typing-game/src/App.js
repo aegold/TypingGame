@@ -9,6 +9,8 @@ import RegisterPage from "./pages/RegisterPage";
 import LessonsPage from "./pages/LessonsPage";
 import LessonDetail from "./pages/LessonDetail";
 import AdminDashboard from "./pages/AdminDashboard";
+import TypingDefenseGamePage from "./pages/TypingDefenseGamePage";
+import GameList from "./pages/GameList";
 import Navbar from "./components/Navbar";
 import { AuthProvider } from "./contexts/AuthContext";
 import LeaderboardPage from "./pages/LeaderboardPage";
@@ -29,6 +31,8 @@ function App() {
           <Route path="/lessons/:id" element={<LessonDetail />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/games" element={<GameList />} />
+          <Route path="/typing-defense" element={<TypingDefenseGamePage />} />
         </Routes>
 
         {/* Toast Container với custom styling */}

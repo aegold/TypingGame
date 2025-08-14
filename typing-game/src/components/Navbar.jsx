@@ -24,9 +24,12 @@ function Navbar() {
   /**
    * Kiểm tra trang hiện tại có phải GamePage không
    */
-  const isGamePage = location.pathname.startsWith("/game");
+  const isGamePage =
+    location.pathname.startsWith("/game/") ||
+    location.pathname === "/game" ||
+    location.pathname === "/typing-defense";
 
-  // Không hiển thị navbar ở GamePage
+  // Không hiển thị navbar ở GamePage cụ thể, nhưng hiển thị ở GameList (/games)
   if (isGamePage) {
     return null;
   }
@@ -57,6 +60,16 @@ function Navbar() {
               }`}
             >
               Bài học
+            </Link>
+            <Link
+              to="/games"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                location.pathname === "/games"
+                  ? "text-blue-600 bg-blue-50"
+                  : "text-gray-700 hover:text-blue-600"
+              }`}
+            >
+              Game
             </Link>
             <Link
               to="/dashboard"
@@ -138,6 +151,16 @@ function Navbar() {
             }`}
           >
             Bài học
+          </Link>
+          <Link
+            to="/games"
+            className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+              location.pathname === "/games"
+                ? "text-blue-600 bg-blue-50"
+                : "text-gray-700 hover:text-blue-600"
+            }`}
+          >
+            🎮 Game
           </Link>
           <Link
             to="/dashboard"
