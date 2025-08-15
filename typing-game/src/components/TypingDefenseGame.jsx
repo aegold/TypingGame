@@ -101,13 +101,17 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * gameState: trạng thái game ('ready' = sẵn sàng, 'playing' = đang chơi, 'gameOver' = kết thúc)
    * score: điểm số hiện tại của người chơi
    * enemies: mảng chứa tất cả quái vật đang có trên màn hình
-   * currentInput: nội dung người dùng đang gõ trong ô input
+   * currentInput: nội dung người dùng đang gõ (bây giờ dùng để theo dõi từ đang gõ)
+   * selectedEnemyId: ID của quái vật đang được chọn để gõ
+   * typedText: văn bản đã gõ cho từ hiện tại
    * lastTime: thời gian frame trước đó (dùng để tính delta time)
    */
   const [gameState, setGameState] = useState("ready");
   const [score, setScore] = useState(0);
   const [enemies, setEnemies] = useState([]);
   const [currentInput, setCurrentInput] = useState("");
+  const [selectedEnemyId, setSelectedEnemyId] = useState(null);
+  const [typedText, setTypedText] = useState("");
   const [lastTime, setLastTime] = useState(0);
 
   /**
@@ -115,12 +119,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * gameRef: tham chiếu đến container game (hiện tại chưa dùng)
    * animationRef: ID của requestAnimationFrame để có thể cancel
    * spawnTimerRef: ID của setInterval tạo quái vật để có thể clear
-   * inputRef: tham chiếu đến ô input để focus
    */
   const gameRef = useRef();
   const animationRef = useRef();
   const spawnTimerRef = useRef();
-  const inputRef = useRef();
 
   /**
    * Custom hook để phát âm thanh khi người chơi gõ đúng
@@ -167,12 +169,9 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     setScore(0);
     setEnemies([]);
     setCurrentInput("");
+    setSelectedEnemyId(null);
+    setTypedText("");
     setLastTime(performance.now());
-
-    // Tự động focus vào ô input
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
 
     // Bắt đầu tạo quái vật định kỳ theo GAME_CONFIG.enemySpawnRate
     spawnTimerRef.current = setInterval(() => {
@@ -255,73 +254,149 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   );
 
   /**
-   * Xử lý khi người dùng gõ vào ô input:
-   * 1. Chuyển text về lowercase và trim space
-   * 2. Kiểm tra xem có trùng với từ nào trên quái vật không
-   * 3. Nếu trùng: đánh dấu quái vật đã bị tiêu diệt, tăng điểm, phát âm thanh
-   * 4. Xóa ô input để sẵn sàng cho từ tiếp theo
-   * 5. Loại bỏ quái vật sau 200ms (để có hiệu ứng visual)
+   * Hàm phụ trợ: Tìm quái vật phù hợp dựa trên chữ cái đầu tiên
+   * Logic: nếu có nhiều từ cùng chữ cái đầu, chọn từ ở vị trí thấp hơn (y cao hơn)
    */
-  const handleInputChange = (e) => {
-    const value = e.target.value.toLowerCase().trim();
-    setCurrentInput(value);
-
-    // Tìm quái vật có từ trùng với input (chưa bị tiêu diệt)
-    const matchedEnemy = enemies.find(
-      (enemy) => enemy.word.toLowerCase() === value && !enemy.matched
-    );
-
-    if (matchedEnemy) {
-      // Đánh dấu quái vật đã bị tiêu diệt
-      setEnemies((prev) =>
-        prev.map((enemy) =>
-          enemy.id === matchedEnemy.id ? { ...enemy, matched: true } : enemy
+  const findTargetEnemyByFirstLetter = useCallback(
+    (letter) => {
+      const candidateEnemies = enemies
+        .filter(
+          (enemy) =>
+            !enemy.matched &&
+            enemy.word.toLowerCase().startsWith(letter.toLowerCase())
         )
-      );
+        .sort((a, b) => b.y - a.y); // Sắp xếp theo y giảm dần (vị trí thấp hơn = y cao hơn)
 
-      // Tăng điểm số (mỗi quái vật = 10 điểm)
-      const newScore = score + 10;
-      setScore(newScore);
-
-      // Thông báo điểm mới cho parent component
-      if (onScoreUpdate) {
-        onScoreUpdate(newScore);
-      }
-
-      // Xóa input và phát âm thanh thành công
-      setCurrentInput("");
-      playSound();
-
-      // Loại bỏ quái vật sau delay ngắn để người chơi thấy hiệu ứng
-      setTimeout(() => {
-        setEnemies((prev) =>
-          prev.filter((enemy) => enemy.id !== matchedEnemy.id)
-        );
-      }, 200);
-    }
-  };
+      return candidateEnemies[0] || null;
+    },
+    [enemies]
+  );
 
   /**
-   * Xử lý các phím đặc biệt:
+   * Xử lý khi người chơi nhấn phím (thay thế handleInputChange cũ)
+   * Logic mới:
+   * 1. Nếu chưa chọn từ nào: chọn từ dựa trên chữ cái đầu tiên
+   * 2. Nếu đã chọn từ: tiếp tục gõ từ đó cho đến khi hoàn thành
+   * 3. Khi hoàn thành từ: tiêu diệt quái vật và reset
+   */
+  const handleKeyInput = useCallback(
+    (e) => {
+      if (gameState !== "playing") return;
+
+      const key = e.key.toLowerCase();
+
+      // Chỉ xử lý các chữ cái a-z
+      if (!/^[a-z]$/.test(key)) return;
+
+      // Nếu chưa chọn từ nào, tìm từ phù hợp dựa trên chữ cái đầu
+      if (!selectedEnemyId) {
+        const targetEnemy = findTargetEnemyByFirstLetter(key);
+        if (targetEnemy) {
+          setSelectedEnemyId(targetEnemy.id);
+          setTypedText(key);
+        }
+        return;
+      }
+
+      // Nếu đã chọn từ, tiếp tục gõ
+      const selectedEnemy = enemies.find(
+        (enemy) => enemy.id === selectedEnemyId
+      );
+      if (!selectedEnemy || selectedEnemy.matched) {
+        // Từ đã bị xóa hoặc matched, reset và thử chọn từ mới
+        setSelectedEnemyId(null);
+        setTypedText("");
+        handleKeyInput(e); // Gọi lại để chọn từ mới
+        return;
+      }
+
+      const newTypedText = typedText + key;
+      const targetWord = selectedEnemy.word.toLowerCase();
+
+      // Kiểm tra xem chữ gõ có đúng không
+      if (targetWord.startsWith(newTypedText)) {
+        setTypedText(newTypedText);
+
+        // Kiểm tra xem đã gõ xong từ chưa
+        if (newTypedText === targetWord) {
+          // Hoàn thành từ - tiêu diệt quái vật
+          setEnemies((prev) =>
+            prev.map((enemy) =>
+              enemy.id === selectedEnemyId ? { ...enemy, matched: true } : enemy
+            )
+          );
+
+          // Tăng điểm số
+          const newScore = score + 10;
+          setScore(newScore);
+
+          // Thông báo điểm mới cho parent component
+          if (onScoreUpdate) {
+            onScoreUpdate(newScore);
+          }
+
+          // Phát âm thanh thành công
+          playSound();
+
+          // Reset selection
+          setSelectedEnemyId(null);
+          setTypedText("");
+
+          // Loại bỏ quái vật sau delay ngắn
+          setTimeout(() => {
+            setEnemies((prev) =>
+              prev.filter((enemy) => enemy.id !== selectedEnemyId)
+            );
+          }, 200);
+        }
+      } else {
+        // Gõ sai, reset selection
+        setSelectedEnemyId(null);
+        setTypedText("");
+      }
+    },
+    [
+      gameState,
+      selectedEnemyId,
+      typedText,
+      enemies,
+      score,
+      onScoreUpdate,
+      playSound,
+      findTargetEnemyByFirstLetter,
+    ]
+  );
+
+  /**
+   * Xử lý các phím đặc biệt và chữ cái:
+   * - Chữ cái a-z: xử lý logic game (chọn từ, gõ từ)
    * - Enter: khởi động lại game khi đang ở trạng thái 'gameOver'
    * - Escape: thoát game và quay lại trang trước đó
    */
-  const handleKeyPress = (e) => {
-    // Phím Enter: chơi lại khi game over
-    if (e.key === "Enter" && gameState === "gameOver") {
-      startGame();
-    }
-
-    // Phím ESC: thoát game
-    if (e.key === "Escape") {
-      // Gọi callback để parent component xử lý (lưu điểm nếu cần)
-      if (onGameOver) {
-        onGameOver(score);
+  const handleKeyPress = useCallback(
+    (e) => {
+      // Xử lý chữ cái khi đang chơi
+      if (gameState === "playing" && /^[a-zA-Z]$/.test(e.key)) {
+        handleKeyInput(e);
       }
-      // Quay lại trang trước đó
-      window.history.back();
-    }
-  };
+
+      // Phím Enter: chơi lại khi game over
+      if (e.key === "Enter" && gameState === "gameOver") {
+        startGame();
+      }
+
+      // Phím ESC: thoát game
+      if (e.key === "Escape") {
+        // Gọi callback để parent component xử lý (lưu điểm nếu cần)
+        if (onGameOver) {
+          onGameOver(score);
+        }
+        // Quay lại trang trước đó
+        window.history.back();
+      }
+    },
+    [gameState, handleKeyInput, startGame, onGameOver, score]
+  );
 
   /**
    * Effect: Khởi động animation loop khi game bắt đầu
@@ -355,9 +430,28 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   }, []);
 
   /**
+   * Effect: Đăng ký keyboard event listener để bắt phím từ toàn bộ trang
+   * Thay thế input field bằng keyboard listening
+   */
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      handleKeyPress(e);
+    };
+
+    // Đăng ký event listener
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup khi component unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyPress]);
+
+  /**
    * Component con để render một quái vật:
    * - Vẽ hình tròn màu đỏ làm thân quái vật
-   * - Hiển thị từ ở giữa quái vật
+   * - Hiển thị từ ở dưới quái vật với highlight nếu được chọn
+   * - Hiển thị phần đã gõ bằng màu khác
    * - Áp dụng hiệu ứng khi bị tiêu diệt (mờ đi và to ra)
    */
   const Enemy = ({ enemy }) => {
@@ -365,30 +459,88 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     const opacity = enemy.matched ? 0.3 : 1; // mờ đi khi bị tiêu diệt
     const scale = enemy.matched ? 1.2 : 1; // to ra khi bị tiêu diệt
 
+    // Kiểm tra xem quái vật này có đang được chọn không
+    const isSelected = selectedEnemyId === enemy.id;
+
+    // Tính toán phần đã gõ và phần chưa gõ
+    const typedPart = isSelected ? typedText : "";
+    const remainingPart = isSelected
+      ? enemy.word.slice(typedText.length)
+      : enemy.word;
+
     return (
       <>
-        {/* Thân quái vật - hình tròn màu đỏ */}
+        {/* Thân quái vật - hình tròn với màu khác nếu được chọn */}
         <Circle
           x={enemy.x + GAME_CONFIG.enemySize / 2}
           y={enemy.y + GAME_CONFIG.enemySize / 2}
           radius={GAME_CONFIG.enemySize / 2}
-          fill={GAME_CONFIG.colors.enemy}
+          fill={isSelected ? "#FF4444" : GAME_CONFIG.colors.enemy}
+          stroke={isSelected ? "#FFD700" : "transparent"}
+          strokeWidth={isSelected ? 3 : 0}
           opacity={opacity}
           scaleX={scale}
           scaleY={scale}
         />
+
         {/* Từ hiển thị dưới quái vật */}
-        <Text
-          x={enemy.x}
-          y={enemy.y + GAME_CONFIG.enemySize + 5}
-          width={GAME_CONFIG.enemySize}
-          text={enemy.word}
-          fontSize={GAME_CONFIG.fontSize}
-          fontFamily="Arial"
-          fill={GAME_CONFIG.colors.enemyText}
-          align="center"
-          opacity={opacity}
-        />
+        {isSelected ? (
+          // Khi được chọn: hiển thị phần đã gõ (xanh) và phần chưa gõ (xám) liền kề nhau
+          <>
+            {/* Tính toán vị trí trung tâm của cả từ */}
+            {(() => {
+              const totalWord = enemy.word;
+              const centerX = enemy.x + GAME_CONFIG.enemySize / 2;
+              const charWidth = GAME_CONFIG.fontSize * 0.55; // Điều chỉnh hệ số cho chính xác hơn
+              const totalWidth = totalWord.length * charWidth;
+              const startX = centerX - totalWidth / 2;
+
+              return (
+                <>
+                  {/* Phần đã gõ - màu xanh lá */}
+                  {typedPart && (
+                    <Text
+                      x={startX}
+                      y={enemy.y + GAME_CONFIG.enemySize + 5}
+                      text={typedPart}
+                      fontSize={GAME_CONFIG.fontSize}
+                      fontFamily="Arial"
+                      fill="#00FF00"
+                      align="left"
+                      opacity={opacity}
+                    />
+                  )}
+                  {/* Phần chưa gõ - màu xám */}
+                  {remainingPart && (
+                    <Text
+                      x={startX + typedPart.length * charWidth}
+                      y={enemy.y + GAME_CONFIG.enemySize + 5}
+                      text={remainingPart}
+                      fontSize={GAME_CONFIG.fontSize}
+                      fontFamily="Arial"
+                      fill="#888888"
+                      align="left"
+                      opacity={opacity}
+                    />
+                  )}
+                </>
+              );
+            })()}
+          </>
+        ) : (
+          // Khi không được chọn: hiển thị bình thường
+          <Text
+            x={enemy.x}
+            y={enemy.y + GAME_CONFIG.enemySize + 5}
+            width={GAME_CONFIG.enemySize}
+            text={enemy.word}
+            fontSize={GAME_CONFIG.fontSize}
+            fontFamily="Arial"
+            fill={GAME_CONFIG.colors.enemyText}
+            align="center"
+            opacity={opacity}
+          />
+        )}
       </>
     );
   };
@@ -397,6 +549,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     <div className="typing-defense-game">
       <div className="game-header">
         <div className="score-display">Score: {score}</div>
+        {/* Hiển thị "Game Over" ở giữa header khi game kết thúc */}
+        {gameState === "gameOver" && (
+          <div className="game-over-center">Game Over</div>
+        )}
         <div className="game-controls">
           {gameState === "ready" && (
             <button className="start-button" onClick={startGame}>
@@ -409,13 +565,9 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
             </button>
           )}
           {gameState === "gameOver" && (
-            <div className="game-over">
-              <div className="game-over-text">Game Over!</div>
-              <div className="final-score">Final Score: {score}</div>
-              <button className="restart-button" onClick={startGame}>
-                Chơi lại
-              </button>
-            </div>
+            <button className="restart-button" onClick={startGame}>
+              Chơi lại
+            </button>
           )}
         </div>
       </div>
@@ -449,19 +601,15 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
         </Stage>
       </div>
 
+      {/* Hướng dẫn chơi - thay thế input section */}
       <div className="input-section">
-        <div className="input-label">Gõ từ để tiêu diệt quái vật:</div>
-        <input
-          ref={inputRef}
-          type="text"
-          value={currentInput}
-          onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
-          className="word-input"
-          placeholder="Gõ ở đây..."
-          disabled={gameState !== "playing"}
-          autoFocus
-        />
+        <div className="input-label">
+          {gameState === "playing"
+            ? selectedEnemyId
+              ? `Đang gõ: ${typedText}`
+              : "Nhấn chữ cái đầu tiên của từ để chọn quái vật"
+            : "Nhấn bàn phím để bắt đầu gõ"}
+        </div>
         {gameState === "gameOver" && (
           <div className="restart-hint">
             Ấn Enter để chơi lại hoặc ESC để thoát
