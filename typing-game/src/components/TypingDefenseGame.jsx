@@ -105,6 +105,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * selectedEnemyId: ID của quái vật đang được chọn để gõ
    * typedText: văn bản đã gõ cho từ hiện tại
    * lastTime: thời gian frame trước đó (dùng để tính delta time)
+   * bullets: mảng chứa các viên đạn đang bay trên màn hình
    */
   const [gameState, setGameState] = useState("ready");
   const [score, setScore] = useState(0);
@@ -113,6 +114,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   const [selectedEnemyId, setSelectedEnemyId] = useState(null);
   const [typedText, setTypedText] = useState("");
   const [lastTime, setLastTime] = useState(0);
+  const [bullets, setBullets] = useState([]);
 
   /**
    * Các refs để truy cập DOM và quản lý animation:
@@ -136,6 +138,32 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    */
   const getRandomWord = useCallback(() => {
     return WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+  }, []);
+
+  /**
+   * Tạo một viên đạn mới bay từ trụ súng đến quái vật
+   * @param {object} targetEnemy - Quái vật mục tiêu
+   */
+  const createBullet = useCallback((targetEnemy) => {
+    const turretX = GAME_CONFIG.width / 2;
+    const turretY = GAME_CONFIG.height - 60;
+    const targetX = targetEnemy.x + GAME_CONFIG.enemySize / 2;
+    const targetY = targetEnemy.y + GAME_CONFIG.enemySize / 2;
+
+    // Tính toán vector hướng
+    const dx = targetX - turretX;
+    const dy = targetY - turretY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    return {
+      id: Date.now() + Math.random(),
+      x: turretX,
+      y: turretY,
+      targetEnemyId: targetEnemy.id,
+      velocityX: (dx / distance) * 400, // tốc độ đạn 400 pixel/giây
+      velocityY: (dy / distance) * 400,
+      active: true,
+    };
   }, []);
 
   /**
@@ -172,6 +200,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     setSelectedEnemyId(null);
     setTypedText("");
     setLastTime(performance.now());
+    setBullets([]);
 
     // Bắt đầu tạo quái vật định kỳ theo GAME_CONFIG.enemySpawnRate
     spawnTimerRef.current = setInterval(() => {
@@ -208,9 +237,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * Game loop chính - được gọi mỗi frame:
    * 1. Tính toán delta time (thời gian giữa các frame)
    * 2. Di chuyển tất cả quái vật xuống dưới
-   * 3. Kiểm tra xem có quái vật nào chạm đáy không
-   * 4. Loại bỏ quái vật đã ra khỏi màn hình hoặc đã bị tiêu diệt
-   * 5. Lên lịch frame tiếp theo
+   * 3. Di chuyển tất cả viên đạn và kiểm tra va chạm
+   * 4. Kiểm tra xem có quái vật nào chạm đáy không
+   * 5. Loại bỏ quái vật đã ra khỏi màn hình hoặc đã bị tiêu diệt
+   * 6. Lên lịch frame tiếp theo
    */
   const updateGame = useCallback(
     (currentTime) => {
@@ -219,6 +249,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
 
       // Tính delta time để chuyển động mượt mà bất kể framerate
       const deltaTime = (currentTime - lastTime) / 1000; // chuyển từ millisecond sang second
+
+      // Kiểm tra delta time hợp lệ để tránh jump
+      if (deltaTime > 0.1) return; // Bỏ qua frame nếu delta time quá lớn
+
       setLastTime(currentTime);
 
       setEnemies((prevEnemies) => {
@@ -245,6 +279,26 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
         return updatedEnemies.filter(
           (enemy) => enemy.y < GAME_CONFIG.height + 50 && !enemy.matched
         );
+      });
+
+      // Cập nhật viên đạn
+      setBullets((prevBullets) => {
+        return prevBullets
+          .map((bullet) => ({
+            ...bullet,
+            x: bullet.x + bullet.velocityX * deltaTime,
+            y: bullet.y + bullet.velocityY * deltaTime,
+          }))
+          .filter((bullet) => {
+            // Loại bỏ đạn ra khỏi màn hình
+            return (
+              bullet.x >= -50 &&
+              bullet.x <= GAME_CONFIG.width + 50 &&
+              bullet.y >= -50 &&
+              bullet.y <= GAME_CONFIG.height + 50 &&
+              bullet.active
+            );
+          });
       });
 
       // Lên lịch frame tiếp theo
@@ -306,10 +360,9 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
         // Từ đã bị xóa hoặc matched, reset và thử chọn từ mới
         setSelectedEnemyId(null);
         setTypedText("");
-        handleKeyInput(e); // Gọi lại để chọn từ mới
+        // Không gọi lại handleKeyInput để tránh vòng lặp vô hạn
         return;
       }
-
       const newTypedText = typedText + key;
       const targetWord = selectedEnemy.word.toLowerCase();
 
@@ -319,10 +372,16 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
 
         // Kiểm tra xem đã gõ xong từ chưa
         if (newTypedText === targetWord) {
-          // Hoàn thành từ - tiêu diệt quái vật
+          // Hoàn thành từ - tạo viên đạn bắn về phía quái vật
+          const bullet = createBullet(selectedEnemy);
+          setBullets((prev) => [...prev, bullet]);
+
+          // Đánh dấu quái vật sẽ bị tiêu diệt (nhưng chờ đạn bắn trúng)
           setEnemies((prev) =>
             prev.map((enemy) =>
-              enemy.id === selectedEnemyId ? { ...enemy, matched: true } : enemy
+              enemy.id === selectedEnemyId
+                ? { ...enemy, targeted: true }
+                : enemy
             )
           );
 
@@ -342,12 +401,27 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
           setSelectedEnemyId(null);
           setTypedText("");
 
-          // Loại bỏ quái vật sau delay ngắn
+          // Loại bỏ quái vật sau khi đạn bay đến (delay dài hơn)
           setTimeout(() => {
             setEnemies((prev) =>
-              prev.filter((enemy) => enemy.id !== selectedEnemyId)
+              prev.map((enemy) =>
+                enemy.id === selectedEnemyId
+                  ? { ...enemy, matched: true }
+                  : enemy
+              )
             );
-          }, 200);
+            // Xóa đạn đã bắn trúng
+            setBullets((prev) =>
+              prev.filter((b) => b.targetEnemyId !== selectedEnemyId)
+            );
+
+            // Loại bỏ quái vật khỏi danh sách sau khi matched
+            setTimeout(() => {
+              setEnemies((prev) =>
+                prev.filter((enemy) => enemy.id !== selectedEnemyId)
+              );
+            }, 200);
+          }, 800); // Thời gian để đạn bay đến mục tiêu
         }
       } else {
         // Gõ sai, reset selection
@@ -364,6 +438,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
       onScoreUpdate,
       playSound,
       findTargetEnemyByFirstLetter,
+      createBullet,
     ]
   );
 
@@ -435,7 +510,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    */
   useEffect(() => {
     const handleKeyDown = (e) => {
-      handleKeyPress(e);
+      // Chỉ xử lý khi game đang chạy
+      if (gameState === "playing") {
+        handleKeyPress(e);
+      }
     };
 
     // Đăng ký event listener
@@ -445,7 +523,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleKeyPress]);
+  }, [handleKeyPress, gameState]);
 
   /**
    * Component con để render một quái vật:
@@ -455,9 +533,9 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * - Áp dụng hiệu ứng khi bị tiêu diệt (mờ đi và to ra)
    */
   const Enemy = ({ enemy }) => {
-    // Hiệu ứng visual khi quái vật bị tiêu diệt
-    const opacity = enemy.matched ? 0.3 : 1; // mờ đi khi bị tiêu diệt
-    const scale = enemy.matched ? 1.2 : 1; // to ra khi bị tiêu diệt
+    // Hiệu ứng visual khi quái vật bị tiêu diệt hoặc đang bị nhắm
+    const opacity = enemy.matched ? 0.3 : enemy.targeted ? 0.7 : 1;
+    const scale = enemy.matched ? 1.2 : 1;
 
     // Kiểm tra xem quái vật này có đang được chọn không
     const isSelected = selectedEnemyId === enemy.id;
@@ -545,6 +623,64 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     );
   };
 
+  /**
+   * Component con để render trụ súng
+   */
+  const Turret = () => {
+    const turretX = GAME_CONFIG.width / 2;
+    const turretY = GAME_CONFIG.height - 60;
+
+    return (
+      <>
+        {/* Đế trụ súng - hình chữ nhật */}
+        <Rect
+          x={turretX - 25}
+          y={turretY + 10}
+          width={50}
+          height={30}
+          fill="#4A4A4A"
+          cornerRadius={5}
+        />
+        {/* Thân súng - hình tròn */}
+        <Circle
+          x={turretX}
+          y={turretY}
+          radius={20}
+          fill="#666666"
+          stroke="#333333"
+          strokeWidth={2}
+        />
+        {/* Nòng súng - hình chữ nhật nhỏ */}
+        <Rect
+          x={turretX - 3}
+          y={turretY - 25}
+          width={6}
+          height={20}
+          fill="#333333"
+          cornerRadius={3}
+        />
+      </>
+    );
+  };
+
+  /**
+   * Component con để render viên đạn
+   */
+  const Bullet = ({ bullet }) => {
+    return (
+      <Rect
+        x={bullet.x - 2}
+        y={bullet.y - 8}
+        width={4}
+        height={16}
+        fill="#FFD700"
+        stroke="#FFA500"
+        strokeWidth={1}
+        cornerRadius={2}
+      />
+    );
+  };
+
   return (
     <div className="typing-defense-game">
       <div className="game-header">
@@ -588,6 +724,14 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
             {enemies.map((enemy) => (
               <Enemy key={enemy.id} enemy={enemy} />
             ))}
+
+            {/* Render tất cả viên đạn */}
+            {bullets.map((bullet) => (
+              <Bullet key={bullet.id} bullet={bullet} />
+            ))}
+
+            {/* Render trụ súng */}
+            <Turret />
 
             {/* Vạch đất ở dưới cùng màn hình */}
             <Rect
