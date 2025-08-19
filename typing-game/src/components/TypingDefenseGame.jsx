@@ -8,6 +8,7 @@ import {
   Image as KonvaImage,
 } from "react-konva";
 import useTypingSound from "../hooks/useTypingSound";
+import useShootSound from "../hooks/useShootSound";
 import "../styles/TypingDefenseGame.css";
 
 /**
@@ -128,8 +129,11 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
 
   /**
    * Custom hook để phát âm thanh khi người chơi gõ đúng
+   * useTypingSound: âm thanh gõ phím (key_sound.wav)
+   * useShootSound: âm thanh bắn súng (shoot.mp3)
    */
   const { playSound } = useTypingSound();
+  const { playShootSound } = useShootSound();
 
   /**
    * Lấy một từ ngẫu nhiên từ danh sách WORD_LIST
@@ -394,8 +398,8 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
             onScoreUpdate(newScore);
           }
 
-          // Phát âm thanh thành công
-          playSound();
+          // Phát âm thanh bắn súng (shoot.mp3)
+          playShootSound();
 
           // Reset selection
           setSelectedEnemyId(null);
@@ -436,7 +440,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
       enemies,
       score,
       onScoreUpdate,
-      playSound,
+      playShootSound,
       findTargetEnemyByFirstLetter,
       createBullet,
     ]
