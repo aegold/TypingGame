@@ -1,14 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Stage,
-  Layer,
-  Text,
-  Rect,
-  Circle,
-  Image as KonvaImage,
-} from "react-konva";
-import useTypingSound from "../hooks/useTypingSound";
+import { Stage, Layer, Text, Rect, Circle } from "react-konva";
 import useShootSound from "../hooks/useShootSound";
+import useExplosionSound from "../hooks/useExplosionSound";
 import "../styles/TypingDefenseGame.css";
 
 /**
@@ -88,9 +81,9 @@ const GAME_CONFIG = {
   enemySize: 60,
   fontSize: 16,
   colors: {
-    background: "#87CEEB", // màu nền trời xanh
+    background: "#B8E6FF", // màu nền trời xanh sáng hơn
     enemy: "#FF6B6B", // màu quái vật đỏ
-    enemyText: "#FFFFFF", // màu chữ trắng
+    enemyText: "#000000", // màu chữ đen để dễ đọc trên nền sáng
     score: "#2E8B57", // màu điểm số xanh lá
     input: "#4A90E2", // màu input xanh dương
   },
@@ -111,29 +104,27 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   const [gameState, setGameState] = useState("ready");
   const [score, setScore] = useState(0);
   const [enemies, setEnemies] = useState([]);
-  const [currentInput, setCurrentInput] = useState("");
   const [selectedEnemyId, setSelectedEnemyId] = useState(null);
   const [typedText, setTypedText] = useState("");
   const [lastTime, setLastTime] = useState(0);
   const [bullets, setBullets] = useState([]);
+  const [displayStatus, setDisplayStatus] = useState(""); // Trạng thái: success, fail, typing
 
   /**
    * Các refs để truy cập DOM và quản lý animation:
-   * gameRef: tham chiếu đến container game (hiện tại chưa dùng)
    * animationRef: ID của requestAnimationFrame để có thể cancel
    * spawnTimerRef: ID của setInterval tạo quái vật để có thể clear
    */
-  const gameRef = useRef();
   const animationRef = useRef();
   const spawnTimerRef = useRef();
 
   /**
-   * Custom hook để phát âm thanh khi người chơi gõ đúng
-   * useTypingSound: âm thanh gõ phím (key_sound.wav)
+   * Custom hook để phát âm thanh
    * useShootSound: âm thanh bắn súng (shoot.mp3)
+   * useExplosionSound: âm thanh nổ khi tiêu diệt kẻ địch (explosion.mp3)
    */
-  const { playSound } = useTypingSound();
   const { playShootSound } = useShootSound();
+  const { playExplosionSound } = useExplosionSound();
 
   /**
    * Lấy một từ ngẫu nhiên từ danh sách WORD_LIST
@@ -145,28 +136,80 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   }, []);
 
   /**
-   * Tạo một viên đạn mới bay từ trụ súng đến quái vật
+   * Tạo một viên đạn mới bay từ trụ súng đến vị trí dự đoán của quái vật
+   * Sử dụng lead targeting để bắn trúng mục tiêu đang di chuyển
    * @param {object} targetEnemy - Quái vật mục tiêu
    */
   const createBullet = useCallback((targetEnemy) => {
     const turretX = GAME_CONFIG.width / 2;
     const turretY = GAME_CONFIG.height - 60;
-    const targetX = targetEnemy.x + GAME_CONFIG.enemySize / 2;
-    const targetY = targetEnemy.y + GAME_CONFIG.enemySize / 2;
 
-    // Tính toán vector hướng
-    const dx = targetX - turretX;
-    const dy = targetY - turretY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    // Vị trí hiện tại của kẻ địch (tâm)
+    const enemyCenterX = targetEnemy.x + GAME_CONFIG.enemySize / 2;
+    const enemyCenterY = targetEnemy.y + GAME_CONFIG.enemySize / 2;
+
+    // Tốc độ đạn và kẻ địch
+    const bulletSpeed = 500; // Tăng tốc độ đạn để dễ bắn trúng
+    const enemyVelocityX = 0; // Kẻ địch chỉ rơi thẳng
+    const enemyVelocityY = GAME_CONFIG.enemySpeed; // Tốc độ rơi của kẻ địch
+
+    // Tính toán lead targeting - dự đoán vị trí kẻ địch
+    // Giải phương trình để tìm thời gian đạn bay đến mục tiêu
+    const dx = enemyCenterX - turretX;
+    const dy = enemyCenterY - turretY;
+
+    // Phương trình bậc 2 để tính thời gian intercept
+    // |bulletPos(t) - enemyPos(t)| = 0
+    const a =
+      enemyVelocityX * enemyVelocityX +
+      enemyVelocityY * enemyVelocityY -
+      bulletSpeed * bulletSpeed;
+    const b = 2 * (dx * enemyVelocityX + dy * enemyVelocityY);
+    const c = dx * dx + dy * dy;
+
+    let interceptTime = 0;
+
+    // Giải phương trình bậc 2
+    const discriminant = b * b - 4 * a * c;
+    if (discriminant >= 0 && Math.abs(a) > 0.001) {
+      const t1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+      const t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+      // Chọn thời gian dương nhỏ nhất
+      interceptTime = Math.min(t1 > 0 ? t1 : Infinity, t2 > 0 ? t2 : Infinity);
+
+      // Nếu không có nghiệm hợp lệ, dùng ước tính đơn giản
+      if (interceptTime === Infinity) {
+        const distanceToTarget = Math.sqrt(dx * dx + dy * dy);
+        interceptTime = distanceToTarget / bulletSpeed;
+      }
+    } else {
+      // Fallback: tính thời gian đơn giản
+      const distanceToTarget = Math.sqrt(dx * dx + dy * dy);
+      interceptTime = distanceToTarget / bulletSpeed;
+    }
+
+    // Vị trí dự đoán của kẻ địch sau thời gian interceptTime
+    const predictedX = enemyCenterX + enemyVelocityX * interceptTime;
+    const predictedY = enemyCenterY + enemyVelocityY * interceptTime;
+
+    // Tính vector hướng đến vị trí dự đoán
+    const targetDx = predictedX - turretX;
+    const targetDy = predictedY - turretY;
+    const targetDistance = Math.sqrt(targetDx * targetDx + targetDy * targetDy);
+
+    // Đảm bảo không chia cho 0
+    const finalDistance = targetDistance > 0 ? targetDistance : 1;
 
     return {
       id: Date.now() + Math.random(),
       x: turretX,
       y: turretY,
       targetEnemyId: targetEnemy.id,
-      velocityX: (dx / distance) * 400, // tốc độ đạn 400 pixel/giây
-      velocityY: (dy / distance) * 400,
+      velocityX: (targetDx / finalDistance) * bulletSpeed,
+      velocityY: (targetDy / finalDistance) * bulletSpeed,
       active: true,
+      interceptTime: interceptTime, // Debug info
     };
   }, []);
 
@@ -200,7 +243,6 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     setGameState("playing");
     setScore(0);
     setEnemies([]);
-    setCurrentInput("");
     setSelectedEnemyId(null);
     setTypedText("");
     setLastTime(performance.now());
@@ -280,20 +322,71 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
         }
 
         // Loại bỏ quái vật đã ra khỏi màn hình hoặc đã bị tiêu diệt
-        return updatedEnemies.filter(
-          (enemy) => enemy.y < GAME_CONFIG.height + 50 && !enemy.matched
-        );
+        return updatedEnemies.filter((enemy) => {
+          // Giữ lại kẻ địch trong màn hình và chưa bị matched
+          const inScreen = enemy.y < GAME_CONFIG.height + 50;
+          const isAlive = !enemy.matched;
+
+          // Nếu kẻ địch bị matched, cho hiệu ứng fade out 500ms trước khi xóa
+          if (enemy.matched && !enemy.fadeStartTime) {
+            enemy.fadeStartTime = Date.now();
+            return true; // Giữ lại để fade out
+          }
+
+          if (enemy.matched && enemy.fadeStartTime) {
+            const fadeTime = Date.now() - enemy.fadeStartTime;
+            if (fadeTime > 500) {
+              return false; // Xóa sau 500ms
+            }
+            return true; // Vẫn đang fade
+          }
+
+          return inScreen && isAlive;
+        });
       });
 
-      // Cập nhật viên đạn
+      // Cập nhật viên đạn và kiểm tra va chạm
       setBullets((prevBullets) => {
-        return prevBullets
+        const updatedBullets = prevBullets
           .map((bullet) => ({
             ...bullet,
             x: bullet.x + bullet.velocityX * deltaTime,
             y: bullet.y + bullet.velocityY * deltaTime,
           }))
           .filter((bullet) => {
+            // Kiểm tra va chạm với kẻ địch
+            const targetEnemy = enemies.find(
+              (e) => e.id === bullet.targetEnemyId
+            );
+            if (targetEnemy && !targetEnemy.matched) {
+              // Tính khoảng cách giữa đạn và tâm kẻ địch
+              const enemyCenterX = targetEnemy.x + GAME_CONFIG.enemySize / 2;
+              const enemyCenterY = targetEnemy.y + GAME_CONFIG.enemySize / 2;
+              const distance = Math.sqrt(
+                Math.pow(bullet.x - enemyCenterX, 2) +
+                  Math.pow(bullet.y - enemyCenterY, 2)
+              );
+
+              // Va chạm nếu đạn ở trong bán kính kẻ địch (với margin)
+              const hitRadius = GAME_CONFIG.enemySize / 2 + 5; // Thêm 5px margin
+              if (distance <= hitRadius) {
+                // Đánh dấu kẻ địch bị tiêu diệt ngay lập tức
+                setEnemies((prev) =>
+                  prev.map((enemy) =>
+                    enemy.id === bullet.targetEnemyId
+                      ? { ...enemy, matched: true }
+                      : enemy
+                  )
+                );
+
+                // Phát âm thanh nổ khi tiêu diệt kẻ địch
+                playExplosionSound();
+
+                // Loại bỏ đạn đã bắn trúng
+                return false;
+              }
+            }
+
             // Loại bỏ đạn ra khỏi màn hình
             return (
               bullet.x >= -50 &&
@@ -303,12 +396,14 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
               bullet.active
             );
           });
+
+        return updatedBullets;
       });
 
       // Lên lịch frame tiếp theo
       animationRef.current = requestAnimationFrame(updateGame);
     },
-    [gameState, lastTime, stopGame]
+    [gameState, lastTime, stopGame, playExplosionSound, enemies]
   );
 
   /**
@@ -352,6 +447,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
         if (targetEnemy) {
           setSelectedEnemyId(targetEnemy.id);
           setTypedText(key);
+          setDisplayStatus("typing");
         }
         return;
       }
@@ -401,36 +497,26 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
           // Phát âm thanh bắn súng (shoot.mp3)
           playShootSound();
 
-          // Reset selection
+          // Reset selection và xóa text ngay lập tức
           setSelectedEnemyId(null);
           setTypedText("");
+          setDisplayStatus("");
 
-          // Loại bỏ quái vật sau khi đạn bay đến (delay dài hơn)
-          setTimeout(() => {
-            setEnemies((prev) =>
-              prev.map((enemy) =>
-                enemy.id === selectedEnemyId
-                  ? { ...enemy, matched: true }
-                  : enemy
-              )
-            );
-            // Xóa đạn đã bắn trúng
-            setBullets((prev) =>
-              prev.filter((b) => b.targetEnemyId !== selectedEnemyId)
-            );
-
-            // Loại bỏ quái vật khỏi danh sách sau khi matched
-            setTimeout(() => {
-              setEnemies((prev) =>
-                prev.filter((enemy) => enemy.id !== selectedEnemyId)
-              );
-            }, 200);
-          }, 800); // Thời gian để đạn bay đến mục tiêu
+          // Hệ thống va chạm sẽ tự động xử lý việc tiêu diệt kẻ địch
+          // Không cần setTimeout nữa
         }
       } else {
-        // Gõ sai, reset selection
+        // Gõ sai, hiển thị fail và reset selection
+        setDisplayStatus("fail");
+
+        // Reset selection
         setSelectedEnemyId(null);
         setTypedText("");
+
+        // Xóa display status sau 800ms
+        setTimeout(() => {
+          setDisplayStatus("");
+        }, 800);
       }
     },
     [
@@ -538,8 +624,24 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    */
   const Enemy = ({ enemy }) => {
     // Hiệu ứng visual khi quái vật bị tiêu diệt hoặc đang bị nhắm
-    const opacity = enemy.matched ? 0.3 : enemy.targeted ? 0.7 : 1;
-    const scale = enemy.matched ? 1.2 : 1;
+    let opacity = 1;
+    let scale = 1;
+
+    if (enemy.matched) {
+      // Tính hiệu ứng fade out
+      if (enemy.fadeStartTime) {
+        const fadeTime = Date.now() - enemy.fadeStartTime;
+        const fadeProgress = Math.min(fadeTime / 500, 1); // 500ms fade
+        opacity = 1 - fadeProgress;
+        scale = 1 + fadeProgress * 0.5; // Scale up khi fade
+      } else {
+        opacity = 0.3;
+        scale = 1.2;
+      }
+    } else if (enemy.targeted) {
+      opacity = 0.8;
+      scale = 1.1;
+    }
 
     // Kiểm tra xem quái vật này có đang được chọn không
     const isSelected = selectedEnemyId === enemy.id;
@@ -668,20 +770,54 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   };
 
   /**
-   * Component con để render viên đạn
+   * Component con để render viên đạn với hướng bay
    */
   const Bullet = ({ bullet }) => {
+    // Tính góc xoay của đạn dựa trên velocity (thêm 90 độ vì đạn mặc định hướng lên)
+    const angle =
+      Math.atan2(bullet.velocityY, bullet.velocityX) * (180 / Math.PI) + 90;
+
     return (
-      <Rect
-        x={bullet.x - 2}
-        y={bullet.y - 8}
-        width={4}
-        height={16}
-        fill="#FFD700"
-        stroke="#FFA500"
-        strokeWidth={1}
-        cornerRadius={2}
-      />
+      <>
+        {/* Thân đạn chính */}
+        <Rect
+          x={bullet.x}
+          y={bullet.y}
+          width={6}
+          height={16}
+          fill="#FFD700"
+          stroke="#FFA500"
+          strokeWidth={1}
+          cornerRadius={3}
+          rotation={angle}
+          offsetX={3} // Đặt trục xoay ở giữa chiều ngang
+          offsetY={8} // Đặt trục xoay ở giữa chiều dọc
+        />
+
+        {/* Đầu đạn nhọn */}
+        <Circle
+          x={bullet.x}
+          y={bullet.y}
+          radius={2}
+          fill="#FF6B00"
+          offsetX={2}
+          offsetY={-6} // Đặt đầu đạn ở phía trước
+          rotation={angle}
+        />
+
+        {/* Hiệu ứng trail đạn */}
+        <Rect
+          x={bullet.x}
+          y={bullet.y}
+          width={2}
+          height={8}
+          fill="#FFEA00"
+          opacity={0.6}
+          rotation={angle}
+          offsetX={1}
+          offsetY={-4} // Trail ở phía sau đạn
+        />
+      </>
     );
   };
 
@@ -736,6 +872,28 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
 
             {/* Render trụ súng */}
             <Turret />
+
+            {/* Display typed text area above turret */}
+            {typedText && (
+              <Text
+                x={GAME_CONFIG.width / 2}
+                y={GAME_CONFIG.height - 120}
+                text={typedText}
+                fontSize={28}
+                fontFamily="monospace"
+                fontStyle="bold"
+                fill={
+                  displayStatus === "success"
+                    ? "#00FF00"
+                    : displayStatus === "fail"
+                    ? "#FF0000"
+                    : "#333"
+                }
+                align="center"
+                width={200}
+                offsetX={100}
+              />
+            )}
 
             {/* Vạch đất ở dưới cùng màn hình */}
             <Rect
