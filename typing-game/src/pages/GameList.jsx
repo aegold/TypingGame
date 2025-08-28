@@ -26,6 +26,19 @@ function GameList() {
       isAvailable: true,
       isNew: true,
     },
+    {
+      id: "typing-fruit",
+      title: "Typing Fruit",
+      description:
+        "Giống Fruit Ninja nhưng dùng bàn phím! Cắt quả bằng cách gõ chữ cái.",
+      icon: "🍎",
+      difficulty: "Trung bình",
+      ageGroup: "8+ tuổi",
+      skills: ["Tốc độ gõ", "Phản xạ", "Tập trung"],
+      path: "/typing-fruit",
+      isAvailable: true,
+      isNew: true,
+    },
   ];
 
   /**

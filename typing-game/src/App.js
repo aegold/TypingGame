@@ -10,6 +10,7 @@ import LessonsPage from "./pages/LessonsPage";
 import LessonDetail from "./pages/LessonDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import TypingDefenseGamePage from "./pages/TypingDefenseGamePage";
+import TypingFruitGamePage from "./pages/TypingFruitGamePage";
 import GameList from "./pages/GameList";
 import Navbar from "./components/Navbar";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -33,6 +34,11 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/games" element={<GameList />} />
           <Route path="/typing-defense" element={<TypingDefenseGamePage />} />
+          <Route path="/typing-fruit" element={<TypingFruitGamePage />} />
+          <Route
+            path="/typing-ninja"
+            element={<div>Typing Ninja Game - Coming Soon!</div>}
+          />
         </Routes>
 
         {/* Toast Container với custom styling */}
