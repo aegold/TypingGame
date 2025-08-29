@@ -395,7 +395,7 @@ const TypingFruitGame = ({
               y={0}
               width={DEFAULT_CONFIG.width}
               height={DEFAULT_CONFIG.height}
-              fill="#8B4513"
+              fill="#D2B48C"
             />
 
             {/* HUD bên trong game stage */}
@@ -412,19 +412,20 @@ const TypingFruitGame = ({
               strokeWidth={1}
             />
 
-            {/* Lives display - góc phải trên */}
-            {Array.from({ length: startLives }, (_, i) => (
-              <Text
-                key={i}
-                x={DEFAULT_CONFIG.width - 60 - i * 35}
-                y={20}
-                text="❤️"
-                fontSize={24}
-                fontFamily="Arial"
-                fill={i < lives ? "#FF0000" : "#666666"}
-                opacity={i < lives ? 1 : 0.3}
-              />
-            ))}
+            {/* Lives display - hiển thị bằng hình trái tim */}
+            <Text
+              x={DEFAULT_CONFIG.width - 20}
+              y={20}
+              text={`❤️ ${lives}`}
+              fontSize={24}
+              fontFamily="Arial"
+              fontStyle="bold"
+              fill="#FF6B6B"
+              stroke="#000000"
+              strokeWidth={1}
+              align="right"
+              offsetX={100} // Căn phải
+            />
 
             {/* Render all fruits */}
             {fruits.map((fruit) => (

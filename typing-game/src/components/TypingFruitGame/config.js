@@ -8,7 +8,7 @@
  */
 export const DEFAULT_CONFIG = {
   width: 1000,
-  height: 500,
+  height: 450, // Giảm chiều cao từ 500 xuống 400
 
   // Trọng lực (px/s²) - Tăng = quả rơi nhanh hơn, Giảm = quả bay lâu hơn/cao hơn
   gravity: 250,
@@ -20,7 +20,7 @@ export const DEFAULT_CONFIG = {
   maxActive: 3,
 
   letterPool: "abcdefghijklmnopqrstuvwxyz",
-  startLives: 999, // vô hạn mạng để debug
+  startLives: 999, // vô hạn mạng
 
   // Kích thước quả - Tăng = quả to hơn/dễ thấy, Giảm = quả nhỏ hơn/khó thấy
   fruitRadius: { min: 30, max: 40 },

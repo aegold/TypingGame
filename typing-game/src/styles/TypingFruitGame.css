@@ -69,7 +69,7 @@
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(180deg, #87ceeb 0%, #98fb98 100%);
+  background: transparent; /* Để background trong suốt */
   position: relative;
 }
 
