@@ -130,7 +130,10 @@
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-  background: #87ceeb;
+  background-image: url("../assets/typing_defense/bg_16x12.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   margin-bottom: 20px;
 }
 

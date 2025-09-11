@@ -17,6 +17,7 @@
     "react-scripts": "5.0.1",
     "react-timer-hook": "^4.0.5",
     "react-toastify": "^11.0.5",
+    "use-image": "^1.1.4",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
