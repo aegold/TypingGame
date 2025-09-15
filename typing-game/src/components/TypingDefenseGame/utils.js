@@ -206,8 +206,9 @@ export const checkBulletEnemyCollision = (bullet, enemy) => {
   if (
     enemy.state !== ENEMY_STATES.ALIVE &&
     enemy.state !== ENEMY_STATES.TARGETED
-  )
+  ) {
     return false;
+  }
 
   // Tính khoảng cách giữa đạn và tâm kẻ địch
   const enemyCenterX = enemy.x + GAME_CONFIG.enemySize / 2;
@@ -218,7 +219,10 @@ export const checkBulletEnemyCollision = (bullet, enemy) => {
 
   // Va chạm nếu đạn chạm đến kẻ địch (hit radius tăng lên để dễ hit hơn)
   const hitRadius = 25; // Tăng từ 15 lên 25 để dễ hit hơn
-  return distance <= hitRadius;
+
+  const hasCollision = distance <= hitRadius;
+
+  return hasCollision;
 };
 
 /**
@@ -232,32 +236,23 @@ export const calculateBulletRotation = (bullet) => {
 };
 
 /**
- * Tính hiệu ứng fade out cho kẻ địch
+ * Tính hiệu ứng hiển thị cho kẻ địch (không còn fade effect)
  * @param {object} enemy - Kẻ địch
  * @returns {object} Object chứa opacity và scale
  */
 export const calculateEnemyFadeEffect = (enemy) => {
-  let opacity = 1;
-  let scale = 1;
-
-  if (enemy.state === ENEMY_STATES.MATCHED) {
-    // Tính hiệu ứng fade out
-    if (enemy.fadeStartTime) {
-      const fadeTime = Date.now() - enemy.fadeStartTime;
-      const fadeProgress = Math.min(fadeTime / GAME_CONFIG.fadeOutDuration, 1);
-      opacity = 1 - fadeProgress;
-      scale = 1 + fadeProgress * 0.5; // Scale up khi fade
-    } else {
-      opacity = 0.3;
-      scale = 1.2;
-    }
-  } else if (enemy.state === ENEMY_STATES.TARGETED) {
-    // Giữ nguyên hiển thị bình thường khi được target, không thay đổi gì
-    opacity = 1;
-    scale = 1;
+  // Validation: đảm bảo enemy object hợp lệ
+  if (!enemy || typeof enemy !== "object") {
+    return { opacity: 1, scale: 1 };
   }
 
-  return { opacity, scale };
+  // Nếu enemy đã bị matched, không hiển thị (opacity = 0)
+  if (enemy.state === ENEMY_STATES.MATCHED) {
+    return { opacity: 0, scale: 1 };
+  }
+
+  // Tất cả trường hợp khác: hiển thị bình thường
+  return { opacity: 1, scale: 1 };
 };
 
 /**

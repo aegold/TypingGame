@@ -1,11 +1,15 @@
 import React from "react";
-import TypingFruitGame from "../components/TypingFruitGame";
+import { useNavigate } from "react-router-dom";
+import TypingFruitGame from "../components/TypingFruitGame/index";
+import "../styles/TypingFruitGamePage.css";
 
 /**
  * TypingFruitGamePage Component
  * Page wrapper cho Typing Fruit Game
  */
 function TypingFruitGamePage() {
+  const navigate = useNavigate();
+
   /**
    * Xử lý khi game kết thúc
    */
@@ -16,6 +20,15 @@ function TypingFruitGamePage() {
 
   return (
     <div className="typing-fruit-game-page">
+      {/* Back button in top-left corner */}
+      <button
+        className="back-button-corner"
+        onClick={() => navigate("/games")}
+        title="Quay lại danh sách game"
+      >
+        ← Quay lại
+      </button>
+
       <TypingFruitGame
         onGameOver={handleGameOver}
         // Có thể customize các props khác:

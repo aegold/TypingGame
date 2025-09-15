@@ -4,13 +4,78 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 20px 10px; /* Giảm padding ngang */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   margin: 20px auto;
-  max-width: 900px;
+  max-width: 100%; /* Thay đổi từ 1100px thành 100% */
+  width: calc(100vw - 20px); /* Đảm bảo fit với viewport */
+  max-width: 1100px; /* Giữ max-width cho desktop */
   font-family: "Arial", sans-serif;
+  box-sizing: border-box;
+}
+
+/* Game Layout - Container cho game và controls */
+.game-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Game Controls Sidebar - Bên phải game */
+.game-controls-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  width: 250px; /* Cố định chiều rộng để tránh layout shift */
+  height: fit-content;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  position: relative;
+  flex-shrink: 0; /* Không cho phép sidebar shrink */
+}
+
+.game-controls-sidebar::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 215, 0, 0.3),
+    rgba(255, 105, 180, 0.3),
+    rgba(64, 224, 208, 0.3)
+  );
+  border-radius: 15px;
+  z-index: -1;
+  filter: blur(5px);
+}
+
+.game-controls-sidebar .quick-guide {
+  text-align: center;
+  color: #ffd700;
+  font-style: italic;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  font-size: 12px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.game-controls-sidebar .quick-guide small {
+  display: block;
+  line-height: 1.4;
 }
 
 /* Game Header */
@@ -63,11 +128,11 @@
   min-width: fit-content;
 }
 
-/* Buttons */
+/* Buttons trong sidebar */
 .start-button,
 .stop-button,
 .restart-button {
-  padding: 12px 24px;
+  padding: 15px 20px;
   font-size: 16px;
   font-weight: bold;
   border: none;
@@ -77,6 +142,13 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%; /* Full width trong sidebar */
+  height: 55px; /* Cố định chiều cao */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 180px; /* Cố định chiều rộng tối thiểu */
 }
 
 .start-button {
@@ -110,6 +182,13 @@
   background: linear-gradient(45deg, #f57c00, #e65100);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.game-over-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
 }
 
 /* Removed: old game-over styles - now using game-over-center in header */
@@ -247,8 +326,33 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .typing-defense-game {
-    padding: 15px;
-    margin: 10px;
+    padding: 10px 5px; /* Giảm padding trên mobile */
+    margin: 10px 5px; /* Giảm margin trên mobile */
+    max-width: calc(100vw - 10px); /* Đảm bảo fit màn hình */
+    width: calc(100vw - 10px);
+  }
+
+  .game-layout {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+
+  .game-controls-sidebar {
+    width: 100%; /* Full width trên mobile */
+    max-width: 400px; /* Giới hạn max width */
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .start-button,
+  .stop-button,
+  .restart-button {
+    height: 50px; /* Giảm height trên mobile */
+    min-width: 140px; /* Giảm min-width trên mobile */
+    font-size: 15px;
   }
 
   .game-header {
@@ -288,7 +392,10 @@
 
 @media (max-width: 480px) {
   .typing-defense-game {
-    padding: 10px;
+    padding: 5px;
+    margin: 5px;
+    max-width: calc(100vw - 10px);
+    width: calc(100vw - 10px);
   }
 
   .score-display {
@@ -298,8 +405,10 @@
   .start-button,
   .stop-button,
   .restart-button {
-    padding: 10px 20px;
+    height: 45px; /* Nhỏ hơn nữa trên màn hình nhỏ */
+    min-width: 120px;
     font-size: 14px;
+    padding: 12px 15px;
   }
 
   .word-input {
@@ -309,6 +418,10 @@
 
   .input-label {
     font-size: 16px;
+  }
+
+  .game-controls-sidebar {
+    padding: 15px;
   }
 }
 

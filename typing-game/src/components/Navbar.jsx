@@ -27,7 +27,8 @@ function Navbar() {
   const isGamePage =
     location.pathname.startsWith("/game/") ||
     location.pathname === "/game" ||
-    location.pathname === "/typing-defense";
+    location.pathname === "/typing-defense" ||
+    location.pathname === "/typing-fruit";
 
   // Không hiển thị navbar ở GamePage cụ thể, nhưng hiển thị ở GameList (/games)
   if (isGamePage) {

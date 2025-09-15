@@ -70,7 +70,6 @@ export const GAME_CONFIG = {
   bulletSpeed: 500, // Tốc độ đạn: pixel/giây
   turretSize: { base: 50, barrel: 20 }, // Kích thước trụ súng
   bulletSize: { width: 6, height: 16 }, // Kích thước đạn
-  fadeOutDuration: 1000, // Thời gian fade out khi tiêu diệt (ms) - tăng lên để dễ thấy hiệu ứng
   colors: {
     background: "#B8E6FF", // màu nền trời xanh sáng hơn
     enemy: "#FF6B6B", // màu quái vật đỏ

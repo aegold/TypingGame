@@ -32,7 +32,6 @@ import {
   updateEnemyPhysics,
   isEnemyOutOfBounds,
   isEnemyInBounds,
-  isFadeOutComplete,
   findTargetEnemyByFirstLetter,
   createBullet,
   updateBulletPhysics,
@@ -238,7 +237,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
 
       lastTimeRef.current = currentTime;
 
-      // Clear destroyed enemies từ frame trước
+      // Shared destroyed enemies set for this frame
       const destroyedEnemies = new Set();
 
       // Cập nhật bullets và detect collisions
@@ -247,8 +246,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
           .map((bullet) => updateBulletPhysics(bullet, deltaTime))
           .filter((bullet) => {
             // Kiểm tra va chạm với kẻ địch từ enemiesRef (current state)
-            const targetEnemy = enemiesRef.current.find(
+            const currentEnemies = enemiesRef.current || [];
+            const targetEnemy = currentEnemies.find(
               (e) =>
+                e &&
                 e.id === bullet.targetEnemyId &&
                 (e.state === ENEMY_STATES.ALIVE ||
                   e.state === ENEMY_STATES.TARGETED)
@@ -270,61 +271,58 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
           });
       });
 
-      // Cập nhật enemies
-      setEnemies((prevEnemies) => {
-        // Di chuyển tất cả quái vật xuống dưới
-        let updatedEnemies = prevEnemies.map((enemy) =>
-          updateEnemyPhysics(enemy, deltaTime)
-        );
+      // Cập nhật enemies với timeout để fix production timing
+      setTimeout(() => {
+        setEnemies((prevEnemies) => {
+          // Di chuyển tất cả quái vật xuống dưới
+          let updatedEnemies = prevEnemies.map((enemy) =>
+            updateEnemyPhysics(enemy, deltaTime)
+          );
 
-        // Kiểm tra xem có quái vật nào chạm đáy màn hình không
-        const reachedBottom = updatedEnemies.some(
-          (enemy) =>
-            isEnemyOutOfBounds(enemy) && enemy.state === ENEMY_STATES.ALIVE
-        );
+          // Kiểm tra xem có quái vật nào chạm đáy màn hình không
+          const reachedBottom = updatedEnemies.some(
+            (enemy) =>
+              isEnemyOutOfBounds(enemy) && enemy.state === ENEMY_STATES.ALIVE
+          );
 
-        // Nếu có quái vật chạm đáy, game over
-        if (reachedBottom) {
-          stopGame();
-          return updatedEnemies;
-        }
-
-        // Cập nhật state của enemies đã bị tiêu diệt
-        updatedEnemies = updatedEnemies.map((enemy) => {
-          if (destroyedEnemies.has(enemy.id)) {
-            return {
-              ...enemy,
-              state: ENEMY_STATES.MATCHED,
-              fadeStartTime: Date.now(),
-            };
-          }
-          return enemy;
-        });
-
-        // Loại bỏ quái vật đã ra khỏi màn hình hoặc đã bị tiêu diệt
-        return updatedEnemies.filter((enemy) => {
-          const inScreen = isEnemyInBounds(enemy);
-          const isAlive = enemy.state === ENEMY_STATES.ALIVE;
-          const isTargeted = enemy.state === ENEMY_STATES.TARGETED;
-          const isMatched = enemy.state === ENEMY_STATES.MATCHED;
-
-          // Nếu kẻ địch bị matched, kiểm tra fade out
-          if (isMatched) {
-            if (!enemy.fadeStartTime) {
-              return false; // Xóa ngay nếu không có fadeStartTime
-            }
-
-            // Kiểm tra xem fade out đã hoàn thành chưa
-            if (isFadeOutComplete(enemy)) {
-              return false; // Xóa sau khi fade xong
-            }
-            return true; // Giữ lại để tiếp tục fade
+          // Nếu có quái vật chạm đáy, game over
+          if (reachedBottom) {
+            stopGame();
+            return updatedEnemies;
           }
 
-          // Các trường hợp khác: giữ lại kẻ địch trong màn hình và còn sống/targeted
-          return inScreen && (isAlive || isTargeted);
+          // Cập nhật state của enemies đã bị tiêu diệt
+          updatedEnemies = updatedEnemies.map((enemy) => {
+            if (destroyedEnemies.has(enemy.id)) {
+              return {
+                ...enemy,
+                state: ENEMY_STATES.MATCHED,
+              };
+            }
+            return enemy;
+          });
+
+          // Loại bỏ quái vật đã ra khỏi màn hình hoặc đã bị tiêu diệt
+          const filteredEnemies = updatedEnemies.filter((enemy) => {
+            if (!enemy) return false; // Safety check
+
+            const inScreen = isEnemyInBounds(enemy);
+            const isAlive = enemy.state === ENEMY_STATES.ALIVE;
+            const isTargeted = enemy.state === ENEMY_STATES.TARGETED;
+            const isMatched = enemy.state === ENEMY_STATES.MATCHED;
+
+            // Nếu kẻ địch bị matched, loại bỏ ngay lập tức (không fade)
+            if (isMatched) {
+              return false; // Xóa ngay khi bị matched
+            }
+
+            // Các trường hợp khác: giữ lại kẻ địch trong màn hình và còn sống/targeted
+            return inScreen && (isAlive || isTargeted);
+          });
+
+          return filteredEnemies;
         });
-      });
+      }, 0); // Timeout 0ms để fix production timing
 
       // Lên lịch frame tiếp theo
       animationRef.current = requestAnimationFrame(updateGame);
@@ -526,13 +524,25 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   /**
    * Component con để render một quái vật:
    * - Vẽ ảnh enemy ngẫu nhiên
-   * - Hiển thị từ ở dưới quái vật với highlight nếu được chọn
+   * - Hiển thị từ ở dưới quái vật với highlight nếi được chọn
    * - Hiển thị phần đã gõ bằng màu khác
-   * - Áp dụng hiệu ứng khi bị tiêu diệt (mờ đi và to ra)
+   * - Enemy biến mất ngay lập tức khi bị tiêu diệt (không có fade effect)
    */
   const Enemy = ({ enemy }) => {
-    // Hiệu ứng visual khi quái vật bị tiêu diệt hoặc đang bị nhắm
-    const { opacity, scale } = calculateEnemyFadeEffect(enemy);
+    // Validation: đảm bảo enemy object hợp lệ
+    if (!enemy || typeof enemy !== "object") {
+      return null;
+    }
+
+    // Hiệu ứng visual - chỉ để kiểm tra có hiển thị hay không
+    const fadeEffect = calculateEnemyFadeEffect(enemy);
+    const opacity = isFinite(fadeEffect.opacity) ? fadeEffect.opacity : 1;
+    const scale = 1; // Không cần scale effect nữa
+
+    // Không hiển thị gì nếu enemy đã bị matched (opacity = 0)
+    if (opacity <= 0) {
+      return null;
+    }
 
     // Kiểm tra xem quái vật này có đang được chọn không
     const isSelected = selectedEnemyId === enemy.id;
@@ -540,29 +550,27 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     // Tính toán phần đã gõ và phần chưa gõ
     const typedPart = isSelected ? typedText : "";
     const remainingPart = isSelected
-      ? enemy.word.slice(typedText.length)
-      : enemy.word;
+      ? (enemy.word || "").slice(typedText.length)
+      : enemy.word || "";
 
     // Lấy ảnh enemy tương ứng
-    const enemyImageLoaded = enemyImagesLoaded[enemy.imageIndex];
+    const enemyImageIndex =
+      typeof enemy.imageIndex === "number" ? enemy.imageIndex : 0;
+    const enemyImageLoaded = enemyImagesLoaded[enemyImageIndex];
 
-    // Kích thước hiển thị enemy (150% của kích thước logic)
-    const enemyDisplaySize = GAME_CONFIG.enemySize * 1.5;
-    const enemyDisplayOffset = (enemyDisplaySize - GAME_CONFIG.enemySize) / 2;
-
+    // Đảm bảo vị trí enemy hợp lệ
+    const enemyX = isFinite(enemy.x) ? enemy.x : 0;
+    const enemyY = isFinite(enemy.y) ? enemy.y : 0;
     return (
       <>
         {/* Thân quái vật - ảnh enemy hoặc fallback circle */}
         {enemyImageLoaded ? (
           <Image
-            x={enemy.x - enemyDisplayOffset}
-            y={enemy.y - enemyDisplayOffset}
-            width={enemyDisplaySize}
-            height={enemyDisplaySize}
+            x={enemyX}
+            y={enemyY}
+            width={GAME_CONFIG.enemySize}
+            height={GAME_CONFIG.enemySize}
             image={enemyImageLoaded}
-            opacity={opacity}
-            scaleX={scale}
-            scaleY={scale}
             stroke={isSelected ? "#FFD700" : "transparent"}
             strokeWidth={isSelected ? 3 : 0}
             listening={false}
@@ -570,9 +578,9 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
         ) : (
           // Fallback: hình tròn nếu ảnh chưa load
           <Circle
-            x={enemy.x + GAME_CONFIG.enemySize / 2}
-            y={enemy.y + GAME_CONFIG.enemySize / 2}
-            radius={enemyDisplaySize / 2}
+            x={enemyX + GAME_CONFIG.enemySize / 2}
+            y={enemyY + GAME_CONFIG.enemySize / 2}
+            radius={GAME_CONFIG.enemySize / 2}
             fill={
               isSelected
                 ? GAME_CONFIG.colors.enemySelected
@@ -580,67 +588,65 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
             }
             stroke={isSelected ? "#FFD700" : "transparent"}
             strokeWidth={isSelected ? 3 : 0}
-            opacity={opacity}
-            scaleX={scale}
-            scaleY={scale}
           />
         )}
 
         {/* Từ hiển thị dưới quái vật */}
-        {isSelected ? (
-          // Khi được chọn: hiển thị phần đã gõ (xanh) và phần chưa gõ (xám) liền kề nhau
+        {remainingPart && (
           <>
-            {(() => {
-              const { startX, charWidth } = calculateWordDisplayPosition(
-                enemy.word,
-                enemy.x
-              );
+            {isSelected ? (
+              // Khi được chọn: hiển thị phần đã gõ (xanh) và phần chưa gõ (xám) liền kề nhau
+              <>
+                {(() => {
+                  const { startX, charWidth } = calculateWordDisplayPosition(
+                    enemy.word || "",
+                    enemyX
+                  );
 
-              return (
-                <>
-                  {/* Phần đã gõ - màu xanh lá */}
-                  {typedPart && (
-                    <Text
-                      x={startX}
-                      y={enemy.y + enemyDisplaySize + 5}
-                      text={typedPart}
-                      fontSize={GAME_CONFIG.fontSize}
-                      fontFamily="Arial"
-                      fill={GAME_CONFIG.colors.enemyTextTyped}
-                      align="left"
-                      opacity={opacity}
-                    />
-                  )}
-                  {/* Phần chưa gõ - màu xám */}
-                  {remainingPart && (
-                    <Text
-                      x={startX + typedPart.length * charWidth}
-                      y={enemy.y + enemyDisplaySize + 5}
-                      text={remainingPart}
-                      fontSize={GAME_CONFIG.fontSize}
-                      fontFamily="Arial"
-                      fill={GAME_CONFIG.colors.enemyTextRemaining}
-                      align="left"
-                      opacity={opacity}
-                    />
-                  )}
-                </>
-              );
-            })()}
+                  return (
+                    <>
+                      {/* Phần đã gõ - màu xanh lá */}
+                      {typedPart && (
+                        <Text
+                          x={startX}
+                          y={enemyY + GAME_CONFIG.enemySize + 5}
+                          text={typedPart}
+                          fontSize={GAME_CONFIG.fontSize}
+                          fontFamily="Arial"
+                          fill={GAME_CONFIG.colors.enemyTextTyped}
+                          align="left"
+                        />
+                      )}
+                      {/* Phần chưa gõ - màu xám */}
+                      {remainingPart && (
+                        <Text
+                          x={startX + typedPart.length * charWidth}
+                          y={enemyY + GAME_CONFIG.enemySize + 5}
+                          text={remainingPart}
+                          fontSize={GAME_CONFIG.fontSize}
+                          fontFamily="Arial"
+                          fill={GAME_CONFIG.colors.enemyTextRemaining}
+                          align="left"
+                        />
+                      )}
+                    </>
+                  );
+                })()}
+              </>
+            ) : (
+              // Khi không được chọn: hiển thị bình thường
+              <Text
+                x={enemyX}
+                y={enemyY + GAME_CONFIG.enemySize + 5}
+                width={GAME_CONFIG.enemySize}
+                text={remainingPart}
+                fontSize={GAME_CONFIG.fontSize}
+                fontFamily="Arial"
+                fill={GAME_CONFIG.colors.enemyText}
+                align="center"
+              />
+            )}
           </>
-        ) : (
-          // Khi không được chọn: hiển thị bình thường
-          <Text
-            x={enemy.x}
-            y={enemy.y + enemyDisplaySize + 5}
-            width={GAME_CONFIG.enemySize}
-            text={enemy.word}
-            fontSize={GAME_CONFIG.fontSize}
-            fontFamily="Arial"
-            fill={GAME_CONFIG.colors.enemyText}
-            align="center"
-            opacity={opacity}
-          />
         )}
       </>
     );
@@ -651,11 +657,11 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    */
   const Turret = () => {
     const turretX = GAME_CONFIG.width / 2;
-    const turretY = GAME_CONFIG.height - 60;
+    const turretY = GAME_CONFIG.height - 50;
 
-    // Kích thước ảnh turret
+    // Kích thước ảnh ship
     const shipWidth = 80;
-    const shipHeight = 60;
+    const shipHeight = 80;
 
     return (
       <>
@@ -757,101 +763,115 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
 
   return (
     <div className="typing-defense-game">
-      <div className="game-header">
-        <div className="score-display">Score: {score}</div>
-        {/* Hiển thị "Game Over" ở giữa header khi game kết thúc */}
-        {gameState === GAME_STATES.GAME_OVER && (
-          <div className="game-over-center">Game Over</div>
-        )}
-        <div className="game-controls">
-          {gameState === GAME_STATES.READY && (
-            <button className="start-button" onClick={startGame}>
-              Bắt đầu trò chơi
-            </button>
-          )}
-          {gameState === GAME_STATES.PLAYING && (
-            <button className="stop-button" onClick={stopGame}>
-              Dừng
-            </button>
-          )}
-          {gameState === GAME_STATES.GAME_OVER && (
-            <button className="restart-button" onClick={startGame}>
-              Chơi lại
-            </button>
-          )}
-        </div>
-      </div>
+      <div className="game-layout">
+        <div className="game-container">
+          <Stage width={GAME_CONFIG.width} height={GAME_CONFIG.height}>
+            <Layer>
+              {/* Background được xử lý bằng CSS */}
 
-      <div className="game-container">
-        <Stage width={GAME_CONFIG.width} height={GAME_CONFIG.height}>
-          <Layer>
-            {/* Background được xử lý bằng CSS */}
-
-            {/* Render tất cả quái vật đang có trên màn hình */}
-            {enemies.map((enemy) => (
-              <Enemy key={enemy.id} enemy={enemy} />
-            ))}
-
-            {/* Render tất cả viên đạn */}
-            {bullets.map((bullet) => (
-              <Bullet key={bullet.id} bullet={bullet} />
-            ))}
-
-            {/* Render trụ súng */}
-            <Turret />
-
-            {/* Display typed text area above turret */}
-            {typedText && (
+              {/* Score display ở góc trên cùng bên trái trong canvas */}
               <Text
-                x={GAME_CONFIG.width / 2}
-                y={GAME_CONFIG.height - 120}
-                text={typedText}
-                fontSize={28}
-                fontFamily="monospace"
+                x={20}
+                y={20}
+                text={`Score: ${score}`}
+                fontSize={24}
+                fontFamily="Arial"
                 fontStyle="bold"
-                fill={
-                  displayStatus === DISPLAY_STATES.SUCCESS
-                    ? "#00FF00"
-                    : displayStatus === DISPLAY_STATES.FAIL
-                    ? "#FF0000"
-                    : "#FFFFFF"
-                }
-                align="center"
-                width={200}
-                offsetX={100}
+                fill="#FFFFFF"
+                stroke="#000000"
+                strokeWidth={1}
               />
-            )}
-          </Layer>
-        </Stage>
-      </div>
 
-      {/* Hướng dẫn chơi - thay thế input section */}
-      <div className="input-section">
-        <div className="input-label">
-          {gameState === GAME_STATES.PLAYING
-            ? selectedEnemyId
-              ? `Đang gõ: ${typedText}`
-              : "Nhấn chữ cái đầu tiên của từ để chọn quái vật"
-            : "Nhấn bàn phím để bắt đầu gõ"}
+              {/* Render tất cả quái vật đang có trên màn hình */}
+              {enemies.map((enemy) => (
+                <Enemy key={enemy.id} enemy={enemy} />
+              ))}
+
+              {/* Render tất cả viên đạn */}
+              {bullets.map((bullet) => (
+                <Bullet key={bullet.id} bullet={bullet} />
+              ))}
+
+              {/* Render trụ súng */}
+              <Turret />
+
+              {/* Display typed text area above turret */}
+              {typedText && (
+                <Text
+                  x={GAME_CONFIG.width / 2}
+                  y={GAME_CONFIG.height - 120}
+                  text={typedText}
+                  fontSize={28}
+                  fontFamily="monospace"
+                  fontStyle="bold"
+                  fill={
+                    displayStatus === DISPLAY_STATES.SUCCESS
+                      ? "#00FF00"
+                      : displayStatus === DISPLAY_STATES.FAIL
+                      ? "#FF0000"
+                      : "#FFFFFF"
+                  }
+                  align="center"
+                  width={200}
+                  offsetX={100}
+                />
+              )}
+
+              {/* Game Over hiển thị trong canvas */}
+              {gameState === GAME_STATES.GAME_OVER && (
+                <Text
+                  x={GAME_CONFIG.width / 2}
+                  y={GAME_CONFIG.height / 2 - 50}
+                  text="GAME OVER"
+                  fontSize={48}
+                  fontFamily="Arial"
+                  fontStyle="bold"
+                  fill="#FF0000"
+                  stroke="#FFFFFF"
+                  strokeWidth={3}
+                  align="center"
+                  offsetX={120}
+                />
+              )}
+            </Layer>
+          </Stage>
         </div>
-        {gameState === GAME_STATES.GAME_OVER && (
-          <div className="restart-hint">
-            Ấn Enter để chơi lại hoặc ESC để thoát
-          </div>
-        )}
-        {gameState === GAME_STATES.PLAYING && (
-          <div className="exit-hint">Ấn ESC để thoát game</div>
-        )}
-      </div>
 
-      <div className="game-instructions">
-        <h3>Cách chơi:</h3>
-        <ul>
-          <li>Gõ các từ xuất hiện trên kẻ thù đang rơi</li>
-          <li>Tiêu diệt kẻ thù trước khi chúng chạm đất</li>
-          <li>Nhận điểm cho mỗi kẻ thù bị tiêu diệt</li>
-          <li>Game over nếu một kẻ thù chạm đáy!</li>
-        </ul>
+        {/* Game Controls Sidebar */}
+        <div className="game-controls-sidebar">
+          {gameState === GAME_STATES.READY && (
+            <>
+              <button className="start-button" onClick={startGame}>
+                Bắt đầu
+              </button>
+              <div className="quick-guide">
+                <small>💡 Gõ từ xuất hiện trên kẻ thù để bắn</small>
+              </div>
+            </>
+          )}
+
+          {gameState === GAME_STATES.PLAYING && (
+            <>
+              <button className="stop-button" onClick={stopGame}>
+                Dừng
+              </button>
+              <div className="quick-guide">
+                <small>⚡ ESC để thoát</small>
+              </div>
+            </>
+          )}
+
+          {gameState === GAME_STATES.GAME_OVER && (
+            <div className="game-over-controls">
+              <button className="restart-button" onClick={startGame}>
+                Chơi lại
+              </button>
+              <div className="quick-guide">
+                <small>⏎ Enter để chơi lại nhanh</small>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
