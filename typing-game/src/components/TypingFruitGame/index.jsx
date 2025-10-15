@@ -44,6 +44,10 @@ const TypingFruitGame = ({
   const [fruits, setFruits] = useState([]);
   const [slashEffects, setSlashEffects] = useState([]); // Mảng chứa slash effects
 
+  // === STATS TRACKING ===
+  const [fruitsSlashed, setFruitsSlashed] = useState(0);
+  const [fruitsLost, setFruitsLost] = useState(0);
+
   // === REFS ===
   const animationRef = useRef();
   const spawnTimerRef = useRef();
@@ -71,6 +75,10 @@ const TypingFruitGame = ({
     setLives(startLives);
     setFruits([]);
     setSlashEffects([]); // Reset slash effects
+
+    // Reset stats
+    setFruitsSlashed(0);
+    setFruitsLost(0);
 
     // Bắt đầu spawn quả định kỳ
     spawnTimerRef.current = setInterval(() => {
@@ -102,11 +110,17 @@ const TypingFruitGame = ({
       cancelAnimationFrame(animationRef.current);
     }
 
-    // Gọi callback
+    // Calculate accuracy: fruitsSlashed / (fruitsSlashed + fruitsLost) * 100
+    const totalFruits = fruitsSlashed + fruitsLost;
+    const accuracy = totalFruits > 0 ? (fruitsSlashed / totalFruits) * 100 : 0;
+
+    // Gọi callback với điểm số và stats
     if (onGameOver) {
-      onGameOver({ score });
+      onGameOver(score, {
+        accuracy,
+      });
     }
-  }, [score, onGameOver]);
+  }, [score, fruitsSlashed, fruitsLost, onGameOver]);
 
   /**
    * Pause/Resume game
@@ -197,6 +211,7 @@ const TypingFruitGame = ({
 
         // Cập nhật lives nếu có quả rơi
         if (livesLost > 0) {
+          setFruitsLost((prev) => prev + livesLost); // Track fruits lost for accuracy
           setLives((prev) => {
             const newLives = prev - livesLost;
             if (newLives <= 0) {
@@ -243,6 +258,9 @@ const TypingFruitGame = ({
         playSlashSound();
         setScore((s) => s + 1);
 
+        // Cập nhật stats
+        setFruitsSlashed((count) => count + 1);
+
         // Tạo slash effect
         const slashEffect = createSlashEffect(targetFruit);
         setSlashEffects((prev) => [...prev, slashEffect]);
@@ -288,14 +306,7 @@ const TypingFruitGame = ({
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Xử lý phím điều khiển game
-      if (e.key === "Escape") {
-        if (
-          gameState === GAME_STATES.PLAYING ||
-          gameState === GAME_STATES.PAUSED
-        ) {
-          togglePause();
-        }
-      } else if (e.key === "Enter" && gameState === GAME_STATES.GAME_OVER) {
+      if (e.key === "Enter" && gameState === GAME_STATES.GAME_OVER) {
         startGame();
       } else {
         handleKeyPress(e);
@@ -304,7 +315,7 @@ const TypingFruitGame = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyPress, togglePause, startGame, gameState]);
+  }, [handleKeyPress, startGame, gameState]);
 
   /**
    * Effect: Cleanup khi unmount
@@ -374,13 +385,8 @@ const TypingFruitGame = ({
           </button>
         )}
         {gameState === GAME_STATES.PLAYING && (
-          <button className="pause-button" onClick={togglePause}>
-            Tạm dừng (ESC)
-          </button>
-        )}
-        {gameState === GAME_STATES.PAUSED && (
-          <button className="resume-button" onClick={togglePause}>
-            Tiếp tục (ESC)
+          <button className="stop-button" onClick={stopGame}>
+            Dừng game
           </button>
         )}
       </div>
@@ -448,32 +454,65 @@ const TypingFruitGame = ({
                 lineCap="round"
               />
             ))}
+
+            {/* Game Over Overlay - inside canvas */}
+            {gameState === GAME_STATES.GAME_OVER && (
+              <>
+                {/* Semi-transparent overlay */}
+                <Rect
+                  x={0}
+                  y={0}
+                  width={DEFAULT_CONFIG.width}
+                  height={DEFAULT_CONFIG.height}
+                  fill="rgba(0, 0, 0, 0.8)"
+                />
+
+                {/* Game Over Text */}
+                <Text
+                  x={DEFAULT_CONFIG.width / 2}
+                  y={DEFAULT_CONFIG.height / 2 - 80}
+                  text="GAME OVER!"
+                  fontSize={48}
+                  fontFamily="Arial"
+                  fontStyle="bold"
+                  fill="#FF6B6B"
+                  stroke="#FFFFFF"
+                  strokeWidth={2}
+                  align="center"
+                  offsetX={120}
+                />
+
+                {/* Final Score */}
+                <Text
+                  x={DEFAULT_CONFIG.width / 2}
+                  y={DEFAULT_CONFIG.height / 2 - 10}
+                  text={`Điểm số: ${score}`}
+                  fontSize={36}
+                  fontFamily="Arial"
+                  fontStyle="bold"
+                  fill="#FFD700"
+                  stroke="#000000"
+                  strokeWidth={2}
+                  align="center"
+                  offsetX={100}
+                />
+
+                {/* Restart instruction */}
+                <Text
+                  x={DEFAULT_CONFIG.width / 2}
+                  y={DEFAULT_CONFIG.height / 2 + 60}
+                  text="Nhấn Enter để chơi lại"
+                  fontSize={20}
+                  fontFamily="Arial"
+                  fill="#FFFFFF"
+                  align="center"
+                  offsetX={110}
+                />
+              </>
+            )}
           </Layer>
         </Stage>
       </div>
-
-      {/* Pause Overlay */}
-      {gameState === GAME_STATES.PAUSED && (
-        <div className="game-overlay">
-          <div className="overlay-content">
-            <h2>Game Paused</h2>
-            <p>Nhấn ESC hoặc click Tiếp tục để chơi tiếp</p>
-          </div>
-        </div>
-      )}
-
-      {/* Game Over Overlay */}
-      {gameState === GAME_STATES.GAME_OVER && (
-        <div className="game-overlay">
-          <div className="overlay-content">
-            <h2>Game Over!</h2>
-            <div className="final-score">Điểm số: {score}</div>
-            <button className="restart-button" onClick={startGame}>
-              Chơi lại (Enter)
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Instructions */}
       <div className="game-instructions">
@@ -483,7 +522,6 @@ const TypingFruitGame = ({
           <li>Nếu nhiều quả cùng chữ cái, quả gần đáy sẽ được cắt trước</li>
           <li>Đừng để quả rơi khỏi màn hình!</li>
           <li>Game kết thúc khi hết tim (❤️)</li>
-          <li>ESC: Tạm dừng/Tiếp tục</li>
         </ul>
       </div>
     </div>

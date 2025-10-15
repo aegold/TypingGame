@@ -116,6 +116,12 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * lastTime: thời gian frame trước đó (dùng để tính delta time)
    * bullets: mảng chứa các viên đạn đang bay trên màn hình
    * displayStatus: trạng thái hiển thị (success, fail, typing)
+   *
+   * Stats tracking:
+   * enemiesKilled: số lượng quái vật đã tiêu diệt
+   * totalKeystrokes: tổng số phím đã gõ
+   * correctKeystrokes: số phím gõ đúng
+   * startTime: thời gian bắt đầu game
    */
   const [gameState, setGameState] = useState(GAME_STATES.READY);
   const [score, setScore] = useState(0);
@@ -124,6 +130,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
   const [typedText, setTypedText] = useState("");
   const [bullets, setBullets] = useState([]);
   const [displayStatus, setDisplayStatus] = useState(DISPLAY_STATES.NONE);
+
+  // Stats tracking
+  const [totalKeystrokes, setTotalKeystrokes] = useState(0);
+  const [correctKeystrokes, setCorrectKeystrokes] = useState(0);
 
   /**
    * Các refs để truy cập DOM và quản lý animation:
@@ -163,6 +173,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * 1. Chuyển state sang 'playing'
    * 2. Reset tất cả dữ liệu về 0
    * 3. Bắt đầu timer tạo quái vật định kỳ
+   * 4. Reset stats tracking
    */
   const startGame = useCallback(() => {
     setGameState(GAME_STATES.PLAYING);
@@ -173,6 +184,10 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
     setBullets([]);
     setDisplayStatus(DISPLAY_STATES.NONE);
     lastTimeRef.current = 0;
+
+    // Reset stats
+    setTotalKeystrokes(0);
+    setCorrectKeystrokes(0);
 
     // Bắt đầu tạo quái vật định kỳ theo GAME_CONFIG.enemySpawnRate
     spawnTimerRef.current = setInterval(() => {
@@ -199,11 +214,19 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
       cancelAnimationFrame(animationRef.current);
     }
 
-    // Thông báo cho parent component game đã kết thúc
+    // Calculate stats
+    const accuracy =
+      totalKeystrokes > 0
+        ? Math.round((correctKeystrokes / totalKeystrokes) * 100)
+        : 0;
+
+    // Thông báo cho parent component game đã kết thúc với stats
     if (onGameOver) {
-      onGameOver(score);
+      onGameOver(score, {
+        accuracy,
+      });
     }
-  }, [score, onGameOver]);
+  }, [score, totalKeystrokes, correctKeystrokes, onGameOver]);
 
   /**
    * Game loop chính - được gọi mỗi frame:
@@ -336,6 +359,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
    * 1. Nếu chưa chọn từ nào: chọn từ dựa trên chữ cái đầu tiên
    * 2. Nếu đã chọn từ: tiếp tục gõ từ đó cho đến khi hoàn thành
    * 3. Khi hoàn thành từ: tiêu diệt quái vật và reset
+   * 4. Track keystrokes cho accuracy calculation
    */
   const handleKeyInput = useCallback(
     (e) => {
@@ -346,6 +370,9 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
       // Chỉ xử lý các chữ cái a-z
       if (!isValidInputKey(key)) return;
 
+      // Track keystroke
+      setTotalKeystrokes((prev) => prev + 1);
+
       // Nếu chưa chọn từ nào, tìm từ phù hợp dựa trên chữ cái đầu
       if (!selectedEnemyId) {
         const targetEnemy = findTargetEnemyByFirstLetter(enemies, key);
@@ -353,6 +380,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
           setSelectedEnemyId(targetEnemy.id);
           setTypedText(key);
           setDisplayStatus(DISPLAY_STATES.TYPING);
+          setCorrectKeystrokes((prev) => prev + 1); // Correct keystroke
         }
         return;
       }
@@ -375,6 +403,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
       // Kiểm tra xem chữ gõ có đúng không
       if (targetWord.startsWith(newTypedText)) {
         setTypedText(newTypedText);
+        setCorrectKeystrokes((prev) => prev + 1); // Correct keystroke
 
         // Kiểm tra xem đã gõ xong từ chưa
         if (newTypedText === targetWord) {
@@ -410,6 +439,7 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
         }
       } else {
         // Gõ sai, hiển thị fail và reset selection
+        // Note: Không tăng correctKeystrokes cho keystroke sai
         setDisplayStatus(DISPLAY_STATES.FAIL);
 
         // Reset selection
@@ -819,19 +849,58 @@ const TypingDefenseGame = ({ onGameOver, onScoreUpdate }) => {
 
               {/* Game Over hiển thị trong canvas */}
               {gameState === GAME_STATES.GAME_OVER && (
-                <Text
-                  x={GAME_CONFIG.width / 2}
-                  y={GAME_CONFIG.height / 2 - 50}
-                  text="GAME OVER"
-                  fontSize={48}
-                  fontFamily="Arial"
-                  fontStyle="bold"
-                  fill="#FF0000"
-                  stroke="#FFFFFF"
-                  strokeWidth={3}
-                  align="center"
-                  offsetX={120}
-                />
+                <>
+                  {/* Semi-transparent overlay */}
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={GAME_CONFIG.width}
+                    height={GAME_CONFIG.height}
+                    fill="rgba(0, 0, 0, 0.8)"
+                  />
+
+                  {/* Game Over Text */}
+                  <Text
+                    x={GAME_CONFIG.width / 2}
+                    y={GAME_CONFIG.height / 2 - 80}
+                    text="GAME OVER!"
+                    fontSize={48}
+                    fontFamily="Arial"
+                    fontStyle="bold"
+                    fill="#FF6B6B"
+                    stroke="#FFFFFF"
+                    strokeWidth={3}
+                    align="center"
+                    offsetX={120}
+                  />
+
+                  {/* Final Score */}
+                  <Text
+                    x={GAME_CONFIG.width / 2}
+                    y={GAME_CONFIG.height / 2 - 10}
+                    text={`Điểm số: ${score}`}
+                    fontSize={36}
+                    fontFamily="Arial"
+                    fontStyle="bold"
+                    fill="#FFD700"
+                    stroke="#000000"
+                    strokeWidth={2}
+                    align="center"
+                    offsetX={100}
+                  />
+
+                  {/* Restart instruction */}
+                  <Text
+                    x={GAME_CONFIG.width / 2}
+                    y={GAME_CONFIG.height / 2 + 60}
+                    text="Nhấn Enter để chơi lại"
+                    fontSize={20}
+                    fontFamily="Arial"
+                    fill="#FFFFFF"
+                    align="center"
+                    offsetX={110}
+                  />
+                </>
               )}
             </Layer>
           </Stage>

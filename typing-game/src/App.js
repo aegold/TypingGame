@@ -14,7 +14,7 @@ import TypingFruitGamePage from "./pages/TypingFruitGamePage";
 import GameList from "./pages/GameList";
 import Navbar from "./components/Navbar";
 import { AuthProvider } from "./contexts/AuthContext";
-import LeaderboardPage from "./pages/LeaderboardPage";
+import UnifiedLeaderboardPage from "./pages/UnifiedLeaderboardPage";
 
 function App() {
   return (
@@ -30,7 +30,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/lessons" element={<LessonsPage />} />
           <Route path="/lessons/:id" element={<LessonDetail />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/leaderboard" element={<UnifiedLeaderboardPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/games" element={<GameList />} />
           <Route path="/typing-defense" element={<TypingDefenseGamePage />} />

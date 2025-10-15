@@ -17,9 +17,9 @@ function TypingDefenseGamePage() {
 
   /**
    * Xử lý khi game kết thúc
-   * Lưu điểm số nếu user đã đăng nhập
+   * Lưu điểm số và thống kê vào arcade leaderboard nếu user đã đăng nhập
    */
-  const handleGameOver = async (finalScore) => {
+  const handleGameOver = async (finalScore, stats = {}) => {
     if (!isLoggedIn) {
       toast.info("Đăng nhập để lưu điểm số!");
       return;
@@ -33,18 +33,24 @@ function TypingDefenseGamePage() {
       setIsSubmittingScore(true);
       const token = localStorage.getItem("token");
 
+      // Submit to arcade leaderboard API with stats
       await axios.post(
-        "/api/score",
+        "/api/arcade/score",
         {
-          lessonId: "typing-defense-game",
+          gameType: "defense",
           score: finalScore,
+          stats: {
+            accuracy: stats.accuracy || 0,
+          },
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      toast.success(`Điểm số ${finalScore} đã được lưu!`);
+      toast.success(
+        `Đã lưu điểm! (Độ chính xác: ${stats.accuracy?.toFixed(1)}%)`
+      );
     } catch (error) {
       console.error("Error saving score:", error);
       toast.error("Không thể lưu điểm số. Vui lòng thử lại!");

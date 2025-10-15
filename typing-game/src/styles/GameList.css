@@ -35,6 +35,32 @@
   line-height: 1.5;
 }
 
+/* Arcade Leaderboard Button */
+.arcade-leaderboard-button {
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  border: none;
+  padding: 15px 30px;
+  border-radius: 30px;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  margin: 20px 0;
+  display: inline-block;
+}
+
+.arcade-leaderboard-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+  background: linear-gradient(135deg, #ffe135 0%, #ffb732 100%);
+}
+
+.arcade-leaderboard-button:active {
+  transform: translateY(-1px);
+}
+
 .login-reminder {
   display: inline-flex;
   align-items: center;

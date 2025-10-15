@@ -19,9 +19,18 @@ const userSchema = new mongoose.Schema(
     isAdmin: { type: Boolean, default: false },
     history: [
       {
-        gameId: { type: String, required: true },
+        gameId: { type: String, required: false }, // Optional to handle legacy data
+        gameType: {
+          type: String,
+          enum: ["lesson", "arcade"],
+          default: "lesson",
+        },
         score: { type: Number, required: true, min: 0 },
         date: { type: Date, default: Date.now },
+        // Stats chi tiết cho arcade games - simplified to only accuracy
+        stats: {
+          accuracy: { type: Number, min: 0, max: 100 },
+        },
       },
     ],
   },

@@ -74,6 +74,9 @@ app.use(`${API_PREFIX}/admin`, adminRoutes);
 const leaderboardRoutes = require("./routes/leaderboard");
 app.use(`${API_PREFIX}`, leaderboardRoutes);
 
+const arcadeRoutes = require("./routes/arcade");
+app.use(`${API_PREFIX}/arcade`, arcadeRoutes);
+
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {

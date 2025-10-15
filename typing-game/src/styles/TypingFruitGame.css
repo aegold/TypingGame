@@ -22,6 +22,7 @@
 .start-button,
 .pause-button,
 .resume-button,
+.stop-button,
 .restart-button {
   background: linear-gradient(45deg, #ff6b6b, #ff8e53);
   color: white;
@@ -40,6 +41,7 @@
 .start-button:hover,
 .pause-button:hover,
 .resume-button:hover,
+.stop-button:hover,
 .restart-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
@@ -52,6 +54,15 @@
 
 .pause-button:hover {
   box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+}
+
+.stop-button {
+  background: linear-gradient(45deg, #e74c3c, #c0392b);
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.stop-button:hover {
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
 }
 
 .resume-button {

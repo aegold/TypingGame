@@ -58,6 +58,15 @@ function GameList() {
         <p className="games-subtitle">
           Chọn trò chơi phù hợp để luyện tập kỹ năng đánh máy một cách vui nhộn!
         </p>
+
+        {/* Leaderboard Button */}
+        <button
+          className="arcade-leaderboard-button"
+          onClick={() => navigate("/leaderboard")}
+        >
+          📊 Xem Bảng Xếp Hạng
+        </button>
+
         {!isLoggedIn && (
           <div className="login-reminder">
             <span>💡 </span>

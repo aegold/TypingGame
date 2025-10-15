@@ -90,7 +90,7 @@ function Navbar() {
                   : "text-gray-700 hover:text-blue-600"
               }`}
             >
-              Leaderboard
+              Bảng Xếp Hạng
             </Link>
           </div>
 
@@ -181,7 +181,7 @@ function Navbar() {
                 : "text-gray-700 hover:text-blue-600"
             }`}
           >
-            Leaderboard
+            Bảng Xếp Hạng
           </Link>
         </div>
       </div>
